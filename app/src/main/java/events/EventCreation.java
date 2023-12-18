@@ -1,6 +1,6 @@
 package events;
 
 public interface EventCreation {
-    void createEvent();
+    Event createEvent();
     void cancelEvent();
 }

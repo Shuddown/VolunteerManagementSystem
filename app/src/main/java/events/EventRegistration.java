@@ -1,6 +1,6 @@
 package events;
 
 public interface EventRegistration {
-    void registerForEvent();
-    void cancelRegistration();
+    void registerForEvent(EventId event);
+    void cancelRegistration(EventId event);
 }
