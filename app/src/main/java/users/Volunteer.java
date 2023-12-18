@@ -1,21 +1,18 @@
 package users;
 
-import events.Event;
-import events.EventRegistration;
+import events.*;
 
 public class Volunteer extends User implements EventRegistration{
 
     @Override
-    public void cancelRegistration(Event event) {
-        // TODO Auto-generated method stub
+    public void cancelRegistration(EventId event) {
         
     }
 
     @Override
-    public void registerForEvent(Event event) {
+    public void registerForEvent(EventId event) {
         // TODO Auto-generated method stub
         
     }
     
-    @Override
 }

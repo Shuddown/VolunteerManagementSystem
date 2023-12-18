@@ -1,5 +1,5 @@
 package events;
-import java.util.HashSet;
+import java.util.HashMap;
 
 import common.Id;
 
@@ -10,11 +10,11 @@ public class EventId extends Id{
         super(ID_LENGTH);
     }
 
-    public static EventId getUniqueEventId(HashSet<EventId> existingIds){
+    public static EventId getUniqueEventId(HashMap<EventId,Event> existingIds){
         EventId candidateId;
         do{
             candidateId = new EventId();
-        }while(existingIds.contains(candidateId));
+        }while(existingIds.containsKey(candidateId));
         return candidateId;
     }
 

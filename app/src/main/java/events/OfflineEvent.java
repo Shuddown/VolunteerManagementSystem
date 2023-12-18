@@ -1,12 +1,16 @@
 package events;
-class OfflineEvent extends Event {
-    private Location location;
+import common.Location;
+import users.*;
+import java.time.*;
 
+public class OfflineEvent extends Event {
+    private Location location;
+    private OfflineEvent(){}
     // Constructors
-    public OfflineEvent(String id, Organizer organizer, int maxParticipants, int maxVolunteers,
+    public OfflineEvent(EventId id, String name, Organizer organizer, int maxParticipants, int maxVolunteers,
                         String contactNumber, String contactEmail, String description,
-                        DateTime start, DateTime end, Location location) {
-        super(id, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
+                        LocalDateTime start, LocalDateTime end, Location location) {
+        super(id, name, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
                 description, start, end);
         this.location = location;
     }
@@ -21,8 +25,8 @@ class OfflineEvent extends Event {
     public void displayDetails() {
         System.out.println("Offline Event Details:");
         System.out.println("Event ID: " + getId());
-        System.out.println("Organizer: " + getOrganizer().getName());
-        System.out.println("Location: " + getLocation().getName());
+        System.out.println("Organizer: " + getOrganizer().getUsername());
+        System.out.println("Location: " + getLocation().getAddress());
         System.out.println("Start Time: " + getStart().toString());
         System.out.println("End Time: " + getEnd().toString());
         System.out.println("Contact Number: " + getContactNumber());
@@ -42,7 +46,7 @@ class OfflineEvent extends Event {
     }
 
     @Override
-    public void notifyParticipant(String id) {
+    public void notifyParticipant(UserId id) {
         // Implementation for notifying a participant of an offline event
     }
 }

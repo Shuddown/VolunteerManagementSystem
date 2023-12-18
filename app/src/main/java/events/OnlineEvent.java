@@ -1,12 +1,20 @@
-class OnlineEvent extends Event {
+package events;
+import users.*;
+import java.io.*;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import com.fasterxml.jackson.databind.*;
+
+public class OnlineEvent extends Event {
     private String attendeeUrl;
     private String volunteerUrl;
 
     // Constructors
-    public OnlineEvent(String id, Organizer organizer, int maxParticipants, int maxVolunteers,
+    public OnlineEvent(EventId id, String name, Organizer organizer, int maxParticipants, int maxVolunteers,
                        String contactNumber, String contactEmail, String description,
-                       DateTime start, DateTime end, String attendeeUrl, String volunteerUrl) {
-        super(id, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
+                       LocalDateTime start, LocalDateTime end, String attendeeUrl, String volunteerUrl) {
+        super(id, name, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
                 description, start, end);
         this.attendeeUrl = attendeeUrl;
         this.volunteerUrl = volunteerUrl;
@@ -26,7 +34,7 @@ class OnlineEvent extends Event {
     public void displayDetails() {
         System.out.println("Online Event Details:");
         System.out.println("Event ID: " + getId());
-        System.out.println("Organizer: " + getOrganizer().getName());
+        System.out.println("Organizer: " + getOrganizer().getUsername());
         System.out.println("Start Time: " + getStart().toString());
         System.out.println("End Time: " + getEnd().toString());
         System.out.println("Contact Number: " + getContactNumber());
@@ -56,23 +64,23 @@ class OnlineEvent extends Event {
     }
 
     @Override
-    public void notifyParticipant(String id) {
+    public void notifyParticipant(UserId id) {
         System.out.println("Upcoming Event Notification:");
         System.out.println("Event Name: " + getDescription());
         System.out.println("Start Time: " + getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     }
     public void notifyParticipantsFromOneDayBefore() {
         // Calculate the start date for notifications (one day before the event)
-        DateTime notificationStartDate = getStart().minus(1, ChronoUnit.DAYS);
+        LocalDateTime notificationStartDate = getStart().minus(Period.ofDays(1));
 
         // Calculate the end date for notifications (the event date)
-        DateTime notificationEndDate = getEnd();
+        LocalDateTime notificationEndDate = getEnd();
 
         // Check if it's time to send the notification
-        DateTime currentDate = DateTime.now();
-        if (currentDate.isAfterOrEqual(notificationStartDate) && currentDate.isBeforeOrEqual(notificationEndDate)) {
+        LocalDateTime currentDate = LocalDateTime.now();
+        if (currentDate.isAfter(notificationStartDate) && currentDate.isBefore(notificationEndDate)) {
             // Notify all participants (replace this with your notification logic)
-            for (String participantId : getRegisteredAttendees()) {
+            for (UserId participantId : getRegisteredAttendees()) {
                 notifyParticipant(participantId);
             }
         } else {

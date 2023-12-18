@@ -5,7 +5,10 @@ package volunteermanagementsystem;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Scanner;
-import java.util.*;
+import java.io.*;
+import exceptions.*;
+import java.util.regex.*;
+
 import common.Location;
 
 public class App {
@@ -26,10 +29,14 @@ public class App {
        
     }
 
-    public class EventManagementSystem{
+    public final class EventManagementSystem{
+
+        private static final String CREDENTIAL_PATH = "user_credentials.txt";
+
+
         private static void signUp() {
             try (Scanner scanner = new Scanner(System.in);
-                 BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
+                 BufferedWriter writer = new BufferedWriter(new FileWriter(CREDENTIAL_PATH, true))) {
     
                 System.out.println("Sign Up:");
                 System.out.print("Enter username: ");
@@ -67,7 +74,7 @@ public class App {
     
         private static void login() {
             try (Scanner scanner = new Scanner(System.in);
-                 BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
+                 BufferedReader reader = new BufferedReader(new FileReader(CREDENTIAL_PATH))) {
     
                 System.out.println("Login:");
                 System.out.print("Enter username: ");
@@ -107,7 +114,7 @@ public class App {
         }
     
         private static boolean isValidCredentials(String username, String password) throws IOException {
-            try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(CREDENTIAL_PATH))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String[] parts = line.split(",");
@@ -120,7 +127,7 @@ public class App {
         }
     
         private static boolean isUsernameExists(String username) throws IOException {
-            try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(CREDENTIAL_PATH))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String[] parts = line.split(",");
@@ -131,6 +138,5 @@ public class App {
             }
             return false; // Username does not exist
         }
-    }
     }
 }

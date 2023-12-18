@@ -1,10 +1,9 @@
 package users;
-import events.EventInteract;
+import events.*;
 import json.JSONConvertable;
 
+import java.util.HashMap;
 import java.util.HashSet;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import events.EventId;
 import common.Displayable;
@@ -29,31 +28,19 @@ abstract public class User implements EventInteract, JSONConvertable, Displayabl
     }
 
     @Override
-    public void displayEvents() {
-        // TODO Auto-generated method stub
-        
+    public void displayEvents(HashMap<EventId, Event> eventMap) {
+        for(EventId id: events){
+            eventMap.get(id).displayDetails();
+        }
     }
 
-    public void displayDetails(){
-        
-        System.out.printf("USER: %s", username);
-        System.out.printf("ID: %s\n", id);
-        System.out.printf("AGE: %s\n", age);
-        System.out.printf("ADDRESS: %s\n", address);
-
-    }
+    abstract public void displayDetails();
 
     @Override
-    public void readFromJSON() {
-        // TODO Auto-generated method stub
-        
-    }
+    abstract public  void readFromJSON();
 
     @Override
-    public void writeToJSON() {
-        // TODO Auto-generated method stub
-        
-    }
+    abstract public void writeToJSON();
 
     public UserId getId() {
         return id;
