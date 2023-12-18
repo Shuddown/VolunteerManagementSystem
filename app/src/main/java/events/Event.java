@@ -1,3 +1,4 @@
+package events;
 abstract class Event {
     private String id;
     private Organizer organizer;
@@ -28,19 +29,41 @@ abstract class Event {
         this.registeredVolunteers = new HashSet<>();
     }
 
-    // Abstract methods
-    public abstract void displayDetails();
-    public abstract void writeToJSON();
-    public abstract void readFromJSON();
-    public abstract void notifyParticipant(String id);
-
     // Getter methods
     public String getId() {
         return id;
     }
 
-    public DateTime getTiming() {
-        return new DateTime(start, end);
+    public Organizer getOrganizer() {
+        return organizer;
+    }
+
+    public int getMaxParticipants() {
+        return maxParticipants;
+    }
+
+    public int getMaxVolunteers() {
+        return maxVolunteers;
+    }
+
+    public String getContactNumber() {
+        return contactNumber;
+    }
+
+    public String getContactEmail() {
+        return contactEmail;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public DateTime getStart() {
+        return start;
+    }
+
+    public DateTime getEnd() {
+        return end;
     }
 
     public HashSet<String> getRegisteredAttendees() {
@@ -50,9 +73,11 @@ abstract class Event {
     public HashSet<String> getRegisteredVolunteers() {
         return registeredVolunteers;
     }
-    public boolean isRegistered(String personId) {
-    // Check if the person is registered as an attendee or volunteer
-    return registeredAttendees.contains(personId) || registeredVolunteers.contains(personId);
-    }
 
+    // Abstract methods
+    public abstract void displayDetails();
+    public abstract void writeToJSON();
+    public abstract void readFromJSON();
+    public abstract void notifyParticipant(String id);
 }
+
