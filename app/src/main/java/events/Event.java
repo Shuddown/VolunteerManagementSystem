@@ -68,6 +68,22 @@ abstract class Event {
     public DateTime getEnd() {
         return end;
     }
+    public boolean isRegisteredAttendee(String attendeeID){
+        for(String AID: registeredAttendees){
+            if(AID.equals(attendeeID)){
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean isRegisteredVolunteer(String volunteerID){
+        for(String VID: registeredVolunteers){
+            if(VID.equals(volunteerID)){
+                return true;
+            }
+        }
+        return false;
+    }
 
     public HashSet<String> getRegisteredAttendees() {
         return registeredAttendees;

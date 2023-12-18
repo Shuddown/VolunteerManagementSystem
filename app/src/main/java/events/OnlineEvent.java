@@ -71,7 +71,6 @@ class OnlineEvent extends Event {
         // Check if it's time to send the notification
         DateTime currentDate = DateTime.now();
         if (currentDate.isAfterOrEqual(notificationStartDate) && currentDate.isBeforeOrEqual(notificationEndDate)) {
-            // Notify all participants (replace this with your notification logic)
             for (String participantId : getRegisteredAttendees()) {
                 notifyParticipant(participantId);
             }
