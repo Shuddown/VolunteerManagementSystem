@@ -15,11 +15,20 @@ public class Attendee extends User implements EventRegistration{
     }
 
     @Override
-    public void registerForEvent(Event event) {
-        attendedEvents.put()
-        
+    public void cancelRegistration(EventId eventId) {
+        events.remove(eventId);
+    }
+
+
+    public void registerForEvent(EventId eventId) {
+        events.add(eventId);
+    }
+
+    @Override
+    public void displayDetails(){
+        System.out.println("Volunteer: ");
     }
     
-
+    
     
 }

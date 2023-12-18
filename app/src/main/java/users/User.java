@@ -10,16 +10,15 @@ import events.EventId;
 import common.Displayable;
 import common.Location;
 
-public class User implements EventInteract, JSONConvertable, Displayable{
+abstract public class User implements EventInteract, JSONConvertable, Displayable{
 
-    @JsonIgnore
-    private static String USER_FILENAME = "users.json";
+    protected UserId id;
+    protected String username;
+    protected int age;
+    protected Location address;
+    protected HashSet<EventId> events;
 
-    private UserId id;
-    private String username;
-    private int age;
-    private Location address;
-    private HashSet<EventId> events;
+    protected User(){};
 
     public User(UserId id, String username, int age, Location address, HashSet<EventId> events){
         this.id = id;
