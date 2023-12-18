@@ -1,7 +1,8 @@
-package app.src.main.java.userData;
+package common;
 
 import java.util.Base64;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 abstract public class Id {
     protected String id;
@@ -14,15 +15,21 @@ abstract public class Id {
     }
     protected Id(){}
 
-    protected Id(HashSet<? extends Id> otherIds, int length){
-        do{
-            id = generateRandomId(length);
-        }while(otherIds.contains(id));
+    protected Id(String id){
+        this.id = id;
+    }
+
+    protected Id(int length){
+        id = generateRandomId(length);
     }
 
     @Override
-    public boolean equals(Id otherId){
-        return id.equals(otherId);
+    public boolean equals(Object otherObject){
+        if(otherObject instanceof Id){
+            Id otherId = (Id) otherObject;
+            return id.equals(otherId.toString());
+        }
+        return false;
     }
 
     @Override
@@ -30,9 +37,6 @@ abstract public class Id {
         return this.id;
     }
 
-    public static void main(String[] args){
-        Id id = new Id(new HashSet<Id>(), 8);
-        System.out.println(id);
-    }
+    
 
 }

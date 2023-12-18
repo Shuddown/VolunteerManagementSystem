@@ -1,16 +1,24 @@
 package events;
 import java.util.HashSet;
 
-import app.src.main.java.userData.Id;
+import common.Id;
 
-class EventId extends Id{
+public class EventId extends Id{
     private static int ID_LENGTH = 11;
 
-    public EventId(HashSet<EventId> otherIds){
-        super(otherIds, ID_LENGTH);
+    public EventId(){
+        super(ID_LENGTH);
+    }
+
+    public static EventId getUniqueEventId(HashSet<EventId> existingIds){
+        EventId candidateId;
+        do{
+            candidateId = new EventId();
+        }while(existingIds.contains(candidateId));
+        return candidateId;
     }
 
     public EventId(String id){
-        this.id = id;
+        super(id);
     }
 }
