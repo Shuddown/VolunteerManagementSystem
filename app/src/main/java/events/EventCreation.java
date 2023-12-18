@@ -2,5 +2,5 @@ package events;
 
 public interface EventCreation {
     Event createEvent();
-    void cancelEvent();
+    void cancelEvent(Event event);
 }

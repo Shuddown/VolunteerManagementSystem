@@ -1,3 +1,15 @@
+package events;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import users.Organizer;
+
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
+
 class OnlineEvent extends Event {
     private String attendeeUrl;
     private String volunteerUrl;
@@ -5,7 +17,7 @@ class OnlineEvent extends Event {
     // Constructors
     public OnlineEvent(String id, Organizer organizer, int maxParticipants, int maxVolunteers,
                        String contactNumber, String contactEmail, String description,
-                       DateTime start, DateTime end, String attendeeUrl, String volunteerUrl) {
+                       LocalDateTime start, LocalDateTime end, String attendeeUrl, String volunteerUrl) {
         super(id, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
                 description, start, end);
         this.attendeeUrl = attendeeUrl;
@@ -26,7 +38,7 @@ class OnlineEvent extends Event {
     public void displayDetails() {
         System.out.println("Online Event Details:");
         System.out.println("Event ID: " + getId());
-        System.out.println("Organizer: " + getOrganizer().getName());
+        System.out.println("Organizer: " + getOrganizer().getUsername());
         System.out.println("Start Time: " + getStart().toString());
         System.out.println("End Time: " + getEnd().toString());
         System.out.println("Contact Number: " + getContactNumber());
@@ -54,30 +66,15 @@ class OnlineEvent extends Event {
     public void readFromJSON() {
         
     }
-
     @Override
-    public void notifyParticipant(String id) {
-        System.out.println("Upcoming Event Notification:");
-        System.out.println("Event Name: " + getDescription());
-        System.out.println("Start Time: " + getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-    }
-    public void notifyParticipantsFromOneDayBefore() {
-        // Calculate the start date for notifications (one day before the event)
-        DateTime notificationStartDate = getStart().minus(1, ChronoUnit.DAYS);
-
-        // Calculate the end date for notifications (the event date)
-        DateTime notificationEndDate = getEnd();
-
-        // Check if it's time to send the notification
-        DateTime currentDate = DateTime.now();
-        if (currentDate.isAfterOrEqual(notificationStartDate) && currentDate.isBeforeOrEqual(notificationEndDate)) {
-            // Notify all participants (replace this with your notification logic)
-            for (String participantId : getRegisteredAttendees()) {
-                notifyParticipant(participantId);
-            }
-        } else {
-            System.out.println("No notification today. Event date is between "
-                    + notificationStartDate.toString() + " and " + notificationEndDate.toString());
+    public void notification() {
+        LocalDateTime now = LocalDateTime.now();
+        long hoursUntilEvent = ChronoUnit.HOURS.between(now,getStart());
+        if (hoursUntilEvent <= 24) {
+            System.out.println("Event is within a day!");
+            System.out.println("Event details: " + getStart());
+            displayDetails();
         }
     }
+
 }

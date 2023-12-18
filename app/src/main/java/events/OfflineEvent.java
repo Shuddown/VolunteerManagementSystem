@@ -1,11 +1,17 @@
 package events;
+
+import common.Location;
+import users.Organizer;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
 class OfflineEvent extends Event {
     private Location location;
 
     // Constructors
     public OfflineEvent(String id, Organizer organizer, int maxParticipants, int maxVolunteers,
                         String contactNumber, String contactEmail, String description,
-                        DateTime start, DateTime end, Location location) {
+                        LocalDateTime start, LocalDateTime end, Location location) {
         super(id, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
                 description, start, end);
         this.location = location;
@@ -21,8 +27,8 @@ class OfflineEvent extends Event {
     public void displayDetails() {
         System.out.println("Offline Event Details:");
         System.out.println("Event ID: " + getId());
-        System.out.println("Organizer: " + getOrganizer().getName());
-        System.out.println("Location: " + getLocation().getName());
+        System.out.println("Organizer: " + getOrganizer().getUsername());
+        System.out.println("Location: " + getLocation().getAddress());
         System.out.println("Start Time: " + getStart().toString());
         System.out.println("End Time: " + getEnd().toString());
         System.out.println("Contact Number: " + getContactNumber());
@@ -42,7 +48,14 @@ class OfflineEvent extends Event {
     }
 
     @Override
-    public void notifyParticipant(String id) {
-        // Implementation for notifying a participant of an offline event
+    public void notification() {
+        LocalDateTime now = LocalDateTime.now();
+        long hoursUntilEvent = ChronoUnit.HOURS.between(now,getStart());
+        if (hoursUntilEvent <= 24) {
+            System.out.println("Event is within a day!");
+            displayDetails();
+
+        }
     }
+
 }

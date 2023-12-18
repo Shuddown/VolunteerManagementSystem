@@ -1,8 +1,10 @@
 package events;
 
 import users.Organizer;
+import java.time.LocalDateTime;
+import java.util.HashSet;
 
-abstract class Event {
+abstract  public class Event {
     private String id;
     private Organizer organizer;
     private int maxParticipants;
@@ -10,15 +12,15 @@ abstract class Event {
     private String contactNumber;
     private String contactEmail;
     private String description;
-    private DateTime start;
-    private DateTime end;
+    private LocalDateTime start;
+    private LocalDateTime end;
     private HashSet<String> registeredAttendees;
     private HashSet<String> registeredVolunteers;
 
     // Constructor
     public Event(String id, Organizer organizer, int maxParticipants, int maxVolunteers,
                  String contactNumber, String contactEmail, String description,
-                 DateTime start, DateTime end) {
+                 LocalDateTime start, LocalDateTime end) {
         this.id = id;
         this.organizer = organizer;
         this.maxParticipants = maxParticipants;
@@ -61,11 +63,11 @@ abstract class Event {
         return description;
     }
 
-    public DateTime getStart() {
+    public LocalDateTime getStart() {
         return start;
     }
 
-    public DateTime getEnd() {
+    public LocalDateTime getEnd() {
         return end;
     }
 
@@ -81,6 +83,6 @@ abstract class Event {
     public abstract void displayDetails();
     public abstract void writeToJSON();
     public abstract void readFromJSON();
-    public abstract void notifyParticipant(String id);
+    public abstract void notification();
 }
 

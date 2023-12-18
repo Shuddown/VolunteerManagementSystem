@@ -1,14 +1,14 @@
 package users;
-import events.EventInteract;
-import json.JSONConvertable;
 
-import java.util.HashSet;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import events.EventId;
 import common.Displayable;
 import common.Location;
+import events.EventId;
+import events.EventInteract;
+import json.JSONConvertable;
+import events.Event;
+
+import java.util.HashMap;
+import java.util.HashSet;
 
 abstract public class User implements EventInteract, JSONConvertable, Displayable{
 
@@ -29,9 +29,10 @@ abstract public class User implements EventInteract, JSONConvertable, Displayabl
     }
 
     @Override
-    public void displayEvents() {
-        // TODO Auto-generated method stub
-        
+    public void displayEvents(HashMap<EventId,Event> eventMap) {
+        for(EventId event: events){
+            (eventMap.get(event)).displayDetails();
+        }
     }
 
     public void displayDetails(){
@@ -75,6 +76,5 @@ abstract public class User implements EventInteract, JSONConvertable, Displayabl
         return events;
     }
 
-    
-    
+h
 }
