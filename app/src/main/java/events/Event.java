@@ -1,4 +1,7 @@
 package events;
+
+import users.Organizer;
+
 abstract class Event {
     private String id;
     private Organizer organizer;
