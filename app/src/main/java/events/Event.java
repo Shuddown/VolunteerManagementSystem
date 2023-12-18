@@ -79,6 +79,22 @@ abstract public class Event implements JSONConvertable, Displayable{
     public LocalDateTime getEnd() {
         return end;
     }
+    public boolean isRegisteredAttendee(String attendeeID){
+        for(String AID: registeredAttendees){
+            if(AID.equals(attendeeID)){
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean isRegisteredVolunteer(String volunteerID){
+        for(String VID: registeredVolunteers){
+            if(VID.equals(volunteerID)){
+                return true;
+            }
+        }
+        return false;
+    }
 
     public HashSet<UserId> getRegisteredAttendees() {
         return registeredAttendees;
