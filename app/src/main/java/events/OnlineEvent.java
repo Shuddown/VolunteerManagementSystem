@@ -15,7 +15,7 @@ class OnlineEvent extends Event {
     private String volunteerUrl;
 
     // Constructors
-    public OnlineEvent(String id, Organizer organizer, int maxParticipants, int maxVolunteers,
+    public OnlineEvent(EventId id, String name, Organizer organizer, int maxParticipants, int maxVolunteers,
                        String contactNumber, String contactEmail, String description,
                        LocalDateTime start, LocalDateTime end, String attendeeUrl, String volunteerUrl) {
         super(id, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
@@ -74,6 +74,28 @@ class OnlineEvent extends Event {
             System.out.println("Event is within a day!");
             System.out.println("Event details: " + getStart());
             displayDetails();
+    public void notifyParticipant(UserId id) {
+        System.out.println("Upcoming Event Notification:");
+        System.out.println("Event Name: " + getDescription());
+        System.out.println("Start Time: " + getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+    }
+    public void notifyParticipantsFromOneDayBefore() {
+        // Calculate the start date for notifications (one day before the event)
+        LocalDateTime notificationStartDate = getStart().minus(Period.ofDays(1));
+
+        // Calculate the end date for notifications (the event date)
+        LocalDateTime notificationEndDate = getEnd();
+
+        // Check if it's time to send the notification
+        LocalDateTime currentDate = LocalDateTime.now();
+        if (currentDate.isAfter(notificationStartDate) && currentDate.isBefore(notificationEndDate)) {
+            // Notify all participants (replace this with your notification logic)
+            for (UserId participantId : getRegisteredAttendees()) {
+                notifyParticipant(participantId);
+            }
+        } else {
+            System.out.println("No notification today. Event date is between "
+                    + notificationStartDate.toString() + " and " + notificationEndDate.toString());
         }
     }
 

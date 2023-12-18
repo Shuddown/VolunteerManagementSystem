@@ -26,7 +26,11 @@ public class Attendee extends User implements EventRegistration{
 
     @Override
     public void displayDetails(){
-        System.out.println("Volunteer: ");
+        System.out.println("Id: " + id);
+        System.out.println("Attendee: " + username);
+        System.out.println("Age: " + age);
+        System.out.println("Address: " + address);
+        System.out.println();
     }
     
     

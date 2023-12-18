@@ -1,8 +1,6 @@
 package users;
 
-import events.Event;
-import events.EventId;
-import events.EventRegistration;
+import events.*;
 
 public class Volunteer extends User implements EventRegistration{
 

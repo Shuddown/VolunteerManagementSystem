@@ -8,8 +8,11 @@ import java.time.temporal.ChronoUnit;
 class OfflineEvent extends Event {
     private Location location;
 
+public class OfflineEvent extends Event {
+    private Location location;
+    private OfflineEvent(){}
     // Constructors
-    public OfflineEvent(String id, Organizer organizer, int maxParticipants, int maxVolunteers,
+    public OfflineEvent(EventId id, String name, Organizer organizer, int maxParticipants, int maxVolunteers,
                         String contactNumber, String contactEmail, String description,
                         LocalDateTime start, LocalDateTime end, Location location) {
         super(id, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,

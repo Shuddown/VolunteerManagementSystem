@@ -1,27 +1,32 @@
 package events;
+import java.util.*;
 
+import common.Displayable;
+import json.JSONConvertable;
 import users.Organizer;
-import java.time.LocalDateTime;
-import java.util.HashSet;
 
-abstract  public class Event {
-    private String id;
-    private Organizer organizer;
-    private int maxParticipants;
-    private int maxVolunteers;
-    private String contactNumber;
-    private String contactEmail;
-    private String description;
-    private LocalDateTime start;
-    private LocalDateTime end;
-    private HashSet<String> registeredAttendees;
-    private HashSet<String> registeredVolunteers;
+abstract public class Event implements JSONConvertable, Displayable{
+    protected EventId id;
+    protected String eventName;
+    protected Organizer organizer;
+    protected int maxParticipants;
+    protected int maxVolunteers;
+    protected String contactNumber;
+    protected String contactEmail;
+    protected String description;
+    protected LocalDateTime start;
+    protected LocalDateTime end;
+    protected HashSet<UserId> registeredAttendees;
+    protected HashSet<UserId> registeredVolunteers;
 
+
+    protected Event(){}
     // Constructor
-    public Event(String id, Organizer organizer, int maxParticipants, int maxVolunteers,
+    public Event(EventId id, String name, Organizer organizer, int maxParticipants, int maxVolunteers,
                  String contactNumber, String contactEmail, String description,
                  LocalDateTime start, LocalDateTime end) {
         this.id = id;
+        this.eventName = name;
         this.organizer = organizer;
         this.maxParticipants = maxParticipants;
         this.maxVolunteers = maxVolunteers;
@@ -35,7 +40,7 @@ abstract  public class Event {
     }
 
     // Getter methods
-    public String getId() {
+    public EventId getId() {
         return id;
     }
 
@@ -70,12 +75,28 @@ abstract  public class Event {
     public LocalDateTime getEnd() {
         return end;
     }
+    public boolean isRegisteredAttendee(String attendeeID){
+        for(String AID: registeredAttendees){
+            if(AID.equals(attendeeID)){
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean isRegisteredVolunteer(String volunteerID){
+        for(String VID: registeredVolunteers){
+            if(VID.equals(volunteerID)){
+                return true;
+            }
+        }
+        return false;
+    }
 
-    public HashSet<String> getRegisteredAttendees() {
+    public HashSet<UserId> getRegisteredAttendees() {
         return registeredAttendees;
     }
 
-    public HashSet<String> getRegisteredVolunteers() {
+    public HashSet<UserId> getRegisteredVolunteers() {
         return registeredVolunteers;
     }
 
