@@ -51,6 +51,7 @@ public class OfflineEvent extends Event {
     public void writeToJSON() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        objectMapper.findAndRegisterModules();
         try{
             LinkedHashSet<OfflineEvent> events = objectMapper.readValue(new File(OFFLINE_FILE), 
             new TypeReference<LinkedHashSet<OfflineEvent>>() {});

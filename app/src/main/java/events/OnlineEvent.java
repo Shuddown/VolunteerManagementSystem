@@ -59,6 +59,7 @@ public class OnlineEvent extends Event {
     public void writeToJSON() {
        ObjectMapper objectMapper = new ObjectMapper();
        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+       objectMapper.findAndRegisterModules();
         try{
             LinkedHashSet<OnlineEvent> events = objectMapper.readValue(new File(ONLINE_FILE), 
             new TypeReference<LinkedHashSet<OnlineEvent>>() {});

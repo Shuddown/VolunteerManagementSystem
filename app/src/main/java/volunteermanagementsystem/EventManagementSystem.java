@@ -24,7 +24,7 @@ import events.*;
 
 public class EventManagementSystem {
     private static final Scanner INPUT = new Scanner(System.in);
-    private static final ObjectMapper MAPPER = (new ObjectMapper()).setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+    private static final ObjectMapper MAPPER = (new ObjectMapper()).setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY).findAndRegisterModules();
     private static final LinkedHashMap<EventId,Event> EVENTS = getAllEvents();
     public static void main(String[] args) throws JsonProcessingException, IOException {
         while (true) {
@@ -106,7 +106,7 @@ public class EventManagementSystem {
 
             switch (choice) {
                 case 1:
-                    Event newEvent = organizer.createEvent(null);
+                    Event newEvent = organizer.createEvent(EVENTS);
                     EVENTS.put(newEvent.getId(), newEvent);
                     break;
                 case 2:
@@ -412,7 +412,7 @@ public class EventManagementSystem {
             // Check if the provided username-password pair exists in the file
             int lineNum = isValidCredentials(username, password, credFilepath);
             if (lineNum > 0) {
-                JsonNode userNode = MAPPER.readTree(new File(dataFilePath)).get(lineNum);
+                JsonNode userNode = MAPPER.readTree(new File(dataFilePath)).get(lineNum-1);
                 return Organizer.readFromJSON(userNode);
             } else {
                 System.out.println("Invalid username or password. Login failed.");
