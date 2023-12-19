@@ -8,6 +8,13 @@ import java.util.HashSet;
 import events.EventId;
 import common.Displayable;
 import common.Location;
+import events.EventId;
+import events.EventInteract;
+import json.JSONConvertable;
+import events.Event;
+
+import java.util.HashMap;
+import java.util.HashSet;
 
 abstract public class User implements EventInteract, JSONConvertable, Displayable{
 
@@ -62,6 +69,5 @@ abstract public class User implements EventInteract, JSONConvertable, Displayabl
         return events;
     }
 
-    
-    
+h
 }

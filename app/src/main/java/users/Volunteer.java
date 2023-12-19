@@ -6,6 +6,7 @@ public class Volunteer extends User implements EventRegistration{
 
     @Override
     public void cancelRegistration(EventId event) {
+        // TODO Auto-generated method stub
         
     }
 
@@ -14,5 +15,4 @@ public class Volunteer extends User implements EventRegistration{
         // TODO Auto-generated method stub
         
     }
-    
 }

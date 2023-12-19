@@ -1,7 +1,12 @@
 package events;
+
 import common.Location;
-import users.*;
-import java.time.*;
+import users.Organizer;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
+class OfflineEvent extends Event {
+    private Location location;
 
 public class OfflineEvent extends Event {
     private Location location;
@@ -10,7 +15,7 @@ public class OfflineEvent extends Event {
     public OfflineEvent(EventId id, String name, Organizer organizer, int maxParticipants, int maxVolunteers,
                         String contactNumber, String contactEmail, String description,
                         LocalDateTime start, LocalDateTime end, Location location) {
-        super(id, name, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
+        super(id, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
                 description, start, end);
         this.location = location;
     }
@@ -46,7 +51,14 @@ public class OfflineEvent extends Event {
     }
 
     @Override
-    public void notifyParticipant(UserId id) {
-        // Implementation for notifying a participant of an offline event
+    public void notification() {
+        LocalDateTime now = LocalDateTime.now();
+        long hoursUntilEvent = ChronoUnit.HOURS.between(now,getStart());
+        if (hoursUntilEvent <= 24) {
+            System.out.println("Event is within a day!");
+            displayDetails();
+
+        }
     }
+
 }
