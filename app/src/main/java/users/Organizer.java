@@ -77,8 +77,11 @@ public class Organizer extends User implements EventCreation {
 
     @Override
     public void displayDetails() {
-        System.out.println("Organizer: ");
-        
+        System.out.println("Id: " + id);
+        System.out.println("Organizer: " + username);
+        System.out.println("Age: " + age);
+        System.out.println("Address: " + address);
+        System.out.println();
     }
 
     

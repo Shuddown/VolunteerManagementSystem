@@ -6,12 +6,12 @@ public class Volunteer extends User implements EventRegistration{
 
     @Override
     public void cancelRegistration(EventId event) {
-        
+        events.remove(event);
     }
 
     @Override
     public void registerForEvent(EventId event) {
-        // TODO Auto-generated method stub
+        events.add(event);
         
     }
     

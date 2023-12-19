@@ -7,7 +7,7 @@ import events.EventId;
 import events.EventRegistration;
 
 public class Attendee extends User implements EventRegistration{
-    
+    private static final ATTENDEE_FILE = "attendee.json"
 
     public Attendee(UserId id, String username, int age, Location address,
             HashSet<EventId> attendedEvents) {
