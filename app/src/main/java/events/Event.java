@@ -4,10 +4,6 @@ import java.util.*;
 import common.Displayable;
 import json.JSONConvertable;
 import users.Organizer;
-import users.UserId;
-
-// import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 
 abstract public class Event implements JSONConvertable, Displayable{
     protected EventId id;
@@ -108,6 +104,6 @@ abstract public class Event implements JSONConvertable, Displayable{
     public abstract void displayDetails();
     public abstract void writeToJSON();
     public abstract void readFromJSON();
-    public abstract void notifyParticipant(UserId id);
+    public abstract void notification();
 }
 

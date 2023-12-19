@@ -14,5 +14,4 @@ public class Volunteer extends User implements EventRegistration{
         events.add(event);
         
     }
-    
 }

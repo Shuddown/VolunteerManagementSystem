@@ -1,12 +1,16 @@
 package events;
-import users.*;
-import java.io.*;
-import java.time.LocalDateTime;
-import java.time.Period;
-import java.time.format.DateTimeFormatter;
-import com.fasterxml.jackson.databind.*;
 
-public class OnlineEvent extends Event {
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import users.Organizer;
+
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
+
+class OnlineEvent extends Event {
     private String attendeeUrl;
     private String volunteerUrl;
 
@@ -14,7 +18,7 @@ public class OnlineEvent extends Event {
     public OnlineEvent(EventId id, String name, Organizer organizer, int maxParticipants, int maxVolunteers,
                        String contactNumber, String contactEmail, String description,
                        LocalDateTime start, LocalDateTime end, String attendeeUrl, String volunteerUrl) {
-        super(id, name, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
+        super(id, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
                 description, start, end);
         this.attendeeUrl = attendeeUrl;
         this.volunteerUrl = volunteerUrl;
@@ -62,8 +66,14 @@ public class OnlineEvent extends Event {
     public void readFromJSON() {
         
     }
-
     @Override
+    public void notification() {
+        LocalDateTime now = LocalDateTime.now();
+        long hoursUntilEvent = ChronoUnit.HOURS.between(now,getStart());
+        if (hoursUntilEvent <= 24) {
+            System.out.println("Event is within a day!");
+            System.out.println("Event details: " + getStart());
+            displayDetails();
     public void notifyParticipant(UserId id) {
         System.out.println("Upcoming Event Notification:");
         System.out.println("Event Name: " + getDescription());
@@ -88,4 +98,5 @@ public class OnlineEvent extends Event {
                     + notificationStartDate.toString() + " and " + notificationEndDate.toString());
         }
     }
+
 }
