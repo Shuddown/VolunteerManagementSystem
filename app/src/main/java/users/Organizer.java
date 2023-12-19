@@ -1,21 +1,65 @@
 package users;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Scanner;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import common.Location;
 import events.*;
 
 public class Organizer extends User implements EventCreation {
 
+    public static final String ORGANIZER_FILE = "app/src/main/files/users/organizers.json";
+    
+    private String contactNumber;
+    private String contactMail;
+
+    public Organizer(){}
+
+    public Organizer(UserId id, String username, int age, Location address, String contactNumber,String contactMail,
+            LinkedHashSet<EventId> organizedEvents) {
+        super(id, username, age, address, organizedEvents);
+        this.contactNumber = contactNumber;
+        this.contactMail = contactMail;
+    }
+    
+    public static Organizer readFromJSON(JsonNode organizerJson) throws JsonProcessingException{
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        Organizer organizer = objectMapper.treeToValue(organizerJson,Organizer.class);
+        return organizer;
+    }
+
+    @Override
+    public void writeToJSON() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        try{
+            LinkedHashSet<Organizer> organizers = objectMapper.readValue(new File(ORGANIZER_FILE), 
+            new TypeReference<LinkedHashSet<Organizer>>() {});
+            organizers.add(this);
+            objectMapper.writeValue(new File(ORGANIZER_FILE), organizers);
+        }catch(IOException e){
+            System.out.println("Error appending object: " + e.getMessage());
+        }
+    }
+        
+
     private static final Scanner INPUT = new Scanner(System.in);
 
     @Override
-    public Event createEvent(HashMap<EventId,Event> eventMap){
+    public Event createEvent(LinkedHashMap<EventId,Event> eventMap){
         System.out.print("What is the name of your new event: ");
         String name = INPUT.nextLine();
         System.out.print("Enter max participants: ");
@@ -67,6 +111,7 @@ public class Organizer extends User implements EventCreation {
             default:
             throw new RuntimeException();
         }
+        newEvent.writeToJSON();
         return newEvent;
 }
 
@@ -81,7 +126,24 @@ public class Organizer extends User implements EventCreation {
         System.out.println("Organizer: " + username);
         System.out.println("Age: " + age);
         System.out.println("Address: " + address);
-        System.out.println();
+        System.out.println("Contact Mail: " + contactMail);
+        System.out.println("Contact Number: " + contactNumber);
+    }
+
+    public static String getOrganizerFile() {
+        return ORGANIZER_FILE;
+    }
+
+    public String getContactNumber() {
+        return contactNumber;
+    }
+
+    public String getContactMail() {
+        return contactMail;
+    }
+
+    public static Scanner getInput() {
+        return INPUT;
     }
 
     

@@ -2,31 +2,24 @@ package users;
 import events.*;
 import json.JSONConvertable;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 
-import events.EventId;
 import common.Displayable;
 import common.Location;
-import events.EventId;
-import events.EventInteract;
-import json.JSONConvertable;
-import events.Event;
 
-import java.util.HashMap;
-import java.util.HashSet;
 
-abstract public class User implements EventInteract, JSONConvertable, Displayable{
+abstract public class User implements EventInteract, JSONConvertable<User>, Displayable{
 
     protected UserId id;
     protected String username;
     protected int age;
     protected Location address;
-    protected HashSet<EventId> events;
+    protected LinkedHashSet<EventId> events;
 
     protected User(){};
 
-    public User(UserId id, String username, int age, Location address, HashSet<EventId> events){
+    public User(UserId id, String username, int age, Location address, LinkedHashSet<EventId> events){
         this.id = id;
         this.username = username;
         this.age = age;
@@ -35,19 +28,13 @@ abstract public class User implements EventInteract, JSONConvertable, Displayabl
     }
 
     @Override
-    public void displayEvents(HashMap<EventId, Event> eventMap) {
+    public void displayEvents(LinkedHashMap<EventId, Event> eventMap) {
         for(EventId id: events){
             eventMap.get(id).displayDetails();
         }
     }
 
     abstract public void displayDetails();
-
-    @Override
-    abstract public  void readFromJSON();
-
-    @Override
-    abstract public void writeToJSON();
 
     public UserId getId() {
         return id;
@@ -65,9 +52,8 @@ abstract public class User implements EventInteract, JSONConvertable, Displayabl
         return address;
     }
 
-    public HashSet<EventId> getEvents() {
+    public LinkedHashSet<EventId> getEvents() {
         return events;
     }
 
-h
 }

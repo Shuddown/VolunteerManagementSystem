@@ -1,8 +1,8 @@
 package events;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public interface EventCreation {
-    Event createEvent(HashMap<EventId,Event> eventMap);
+    Event createEvent(LinkedHashMap<EventId,Event> eventMap);
     void cancelEvent(EventId eventId);
 }

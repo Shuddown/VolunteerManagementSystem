@@ -1,5 +1,5 @@
 package users;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import common.Id;
 public class UserId extends Id{
@@ -9,7 +9,7 @@ public class UserId extends Id{
         super(ID_LENGTH);
     }
 
-    public static UserId getUniqueEventId(HashSet<UserId> existingIds){
+    public static UserId getUniqueUserId(LinkedHashSet<UserId> existingIds){
         UserId candidateId;
         do{
             candidateId = new UserId();

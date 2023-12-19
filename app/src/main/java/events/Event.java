@@ -1,11 +1,14 @@
 package events;
 import java.util.*;
-
+import users.*;
 import common.Displayable;
+import exceptions.AlreadyParticipatedException;
 import json.JSONConvertable;
-import users.Organizer;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 
-abstract public class Event implements JSONConvertable, Displayable{
+
+abstract public class Event implements JSONConvertable<Event>, Displayable{
     protected EventId id;
     protected String eventName;
     protected Organizer organizer;
@@ -16,8 +19,8 @@ abstract public class Event implements JSONConvertable, Displayable{
     protected String description;
     protected LocalDateTime start;
     protected LocalDateTime end;
-    protected HashSet<UserId> registeredAttendees;
-    protected HashSet<UserId> registeredVolunteers;
+    protected LinkedHashSet<UserId> registeredAttendees;
+    protected LinkedHashSet<UserId> registeredVolunteers;
 
 
     protected Event(){}
@@ -35,8 +38,8 @@ abstract public class Event implements JSONConvertable, Displayable{
         this.description = description;
         this.start = start;
         this.end = end;
-        this.registeredAttendees = new HashSet<>();
-        this.registeredVolunteers = new HashSet<>();
+        this.registeredAttendees = new LinkedHashSet<>();
+        this.registeredVolunteers = new LinkedHashSet<>();
     }
 
     // Getter methods
@@ -75,16 +78,16 @@ abstract public class Event implements JSONConvertable, Displayable{
     public LocalDateTime getEnd() {
         return end;
     }
-    public boolean isRegisteredAttendee(String attendeeID){
-        for(String AID: registeredAttendees){
+    public boolean isRegisteredAttendee(UserId attendeeID){
+        for(UserId AID: registeredAttendees){
             if(AID.equals(attendeeID)){
                 return true;
             }
         }
         return false;
     }
-    public boolean isRegisteredVolunteer(String volunteerID){
-        for(String VID: registeredVolunteers){
+    public boolean isRegisteredVolunteer(UserId volunteerID){
+        for(UserId VID: registeredVolunteers){
             if(VID.equals(volunteerID)){
                 return true;
             }
@@ -92,18 +95,58 @@ abstract public class Event implements JSONConvertable, Displayable{
         return false;
     }
 
-    public HashSet<UserId> getRegisteredAttendees() {
+    public LinkedHashSet<UserId> getRegisteredAttendees() {
         return registeredAttendees;
     }
 
-    public HashSet<UserId> getRegisteredVolunteers() {
+    public LinkedHashSet<UserId> getRegisteredVolunteers() {
         return registeredVolunteers;
     }
+
+    public void registerVolunteer(UserId id){
+        if(isRegisteredVolunteer(id))
+        throw new AlreadyParticipatedException();
+        if(registeredVolunteers.size() >= maxVolunteers)
+        System.out.println("No more volunteers are needed for this event!");
+        else{
+            registeredAttendees.add(id);
+        }
+    }
+
+    public void registerAttendee(UserId id){
+        if(isRegisteredAttendee(id))
+        throw new AlreadyParticipatedException();
+        if(registeredAttendees.size() >= maxParticipants)
+        System.out.println("No more attendees can attend this event!");
+        else{
+            registeredAttendees.add(id);
+        }
+    }
+
+    public void unregisterVolunteer(UserId id){
+        if(!registeredVolunteers.contains(id)) System.out.println("Not participating in this event!");
+        registeredVolunteers.remove(id);
+    }
+
+    public void unregisterAttendee(UserId id){
+        if(!registeredAttendees.contains(id)) System.out.println("Not participating in this event!");
+        registeredAttendees.remove(id);
+    }
+
+    public void notification(UserId id) {
+        LocalDateTime now = LocalDateTime.now();
+        long hoursUntilEvent = ChronoUnit.HOURS.between(now,getStart());
+        if (hoursUntilEvent <= 24) {
+            System.out.println("Event is within a day!");
+            displayDetails();
+
+        }
+    }
+
 
     // Abstract methods
     public abstract void displayDetails();
     public abstract void writeToJSON();
     public abstract void readFromJSON();
-    public abstract void notification();
 }
 

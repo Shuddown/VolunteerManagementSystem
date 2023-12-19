@@ -1,24 +1,30 @@
 package events;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import users.Organizer;
+import users.UserId;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+// import java.time.Period;
+// import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashSet;
 
 
-class OnlineEvent extends Event {
+public class OnlineEvent extends Event {
     private String attendeeUrl;
     private String volunteerUrl;
-
+    public static String ONLINE_FILE = "app/src/main/files/events/online_events.json";
     // Constructors
     public OnlineEvent(EventId id, String name, Organizer organizer, int maxParticipants, int maxVolunteers,
                        String contactNumber, String contactEmail, String description,
                        LocalDateTime start, LocalDateTime end, String attendeeUrl, String volunteerUrl) {
-        super(id, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
+        super(id, name, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
                 description, start, end);
         this.attendeeUrl = attendeeUrl;
         this.volunteerUrl = volunteerUrl;
@@ -51,14 +57,15 @@ class OnlineEvent extends Event {
 
     @Override
     public void writeToJSON() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-
-        try {
-            objectMapper.writeValue(new File("online_event.json"), this);
-            System.out.println("Event details written to JSON file.");
-        } catch (IOException e) {
-            e.printStackTrace();
+       ObjectMapper objectMapper = new ObjectMapper();
+       objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        try{
+            LinkedHashSet<OnlineEvent> events = objectMapper.readValue(new File(ONLINE_FILE), 
+            new TypeReference<LinkedHashSet<OnlineEvent>>() {});
+            events.add(this);
+            objectMapper.writeValue(new File(ONLINE_FILE), events);
+        }catch(IOException e){
+            System.out.println("Error appending object: " + e.getMessage());
         }
     }
 
@@ -67,36 +74,15 @@ class OnlineEvent extends Event {
         
     }
     @Override
-    public void notification() {
+    public void notification(UserId id) {
         LocalDateTime now = LocalDateTime.now();
         long hoursUntilEvent = ChronoUnit.HOURS.between(now,getStart());
         if (hoursUntilEvent <= 24) {
             System.out.println("Event is within a day!");
             System.out.println("Event details: " + getStart());
             displayDetails();
-    public void notifyParticipant(UserId id) {
-        System.out.println("Upcoming Event Notification:");
-        System.out.println("Event Name: " + getDescription());
-        System.out.println("Start Time: " + getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-    }
-    public void notifyParticipantsFromOneDayBefore() {
-        // Calculate the start date for notifications (one day before the event)
-        LocalDateTime notificationStartDate = getStart().minus(Period.ofDays(1));
-
-        // Calculate the end date for notifications (the event date)
-        LocalDateTime notificationEndDate = getEnd();
-
-        // Check if it's time to send the notification
-        LocalDateTime currentDate = LocalDateTime.now();
-        if (currentDate.isAfter(notificationStartDate) && currentDate.isBefore(notificationEndDate)) {
-            // Notify all participants (replace this with your notification logic)
-            for (UserId participantId : getRegisteredAttendees()) {
-                notifyParticipant(participantId);
-            }
-        } else {
-            System.out.println("No notification today. Event date is between "
-                    + notificationStartDate.toString() + " and " + notificationEndDate.toString());
         }
+
     }
 
 }

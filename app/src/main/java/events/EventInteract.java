@@ -1,8 +1,6 @@
 package events;
-import java.util.HashMap;
-
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public interface EventInteract {
-    void displayEvents(HashMap<EventId,Event> eventMap);
+    void displayEvents(LinkedHashMap<EventId,Event> eventMap);
 }

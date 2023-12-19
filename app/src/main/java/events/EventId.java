@@ -1,5 +1,5 @@
 package events;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import common.Id;
 
@@ -10,7 +10,7 @@ public class EventId extends Id{
         super(ID_LENGTH);
     }
 
-    public static EventId getUniqueEventId(HashMap<EventId,Event> existingIds){
+    public static EventId getUniqueEventId(LinkedHashMap<EventId,Event> existingIds){
         EventId candidateId;
         do{
             candidateId = new EventId();

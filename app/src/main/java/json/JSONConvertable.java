@@ -1,6 +1,5 @@
 package json;
 
-public interface JSONConvertable {
+public interface JSONConvertable<T> {
     public void writeToJSON();
-    public void readFromJSON();
 }
