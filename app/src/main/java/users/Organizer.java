@@ -12,8 +12,10 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 import common.Location;
 import events.*;
@@ -49,7 +51,8 @@ public class Organizer extends User implements EventCreation {
             LinkedHashSet<Organizer> organizers = objectMapper.readValue(new File(ORGANIZER_FILE), 
             new TypeReference<LinkedHashSet<Organizer>>() {});
             organizers.add(this);
-            objectMapper.writeValue(new File(ORGANIZER_FILE), organizers);
+            ObjectWriter writer = objectMapper.writer(new DefaultPrettyPrinter());
+            writer.writeValue(new File(ORGANIZER_FILE), organizers);
         }catch(IOException e){
             System.out.println("Error appending object: " + e.getMessage());
         }
@@ -112,6 +115,7 @@ public class Organizer extends User implements EventCreation {
             throw new RuntimeException();
         }
         newEvent.writeToJSON();
+        this.events.add(newEvent.getId());
         return newEvent;
 }
 

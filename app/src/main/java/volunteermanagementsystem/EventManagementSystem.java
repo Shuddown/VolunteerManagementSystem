@@ -7,12 +7,16 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Scanner;
+import java.util.ArrayList;
 import java.io.*;
 import exceptions.*;
 import users.*;
@@ -25,14 +29,17 @@ import events.*;
 public class EventManagementSystem {
     private static final Scanner INPUT = new Scanner(System.in);
     private static final ObjectMapper MAPPER = (new ObjectMapper()).setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY).findAndRegisterModules();
+    private static final ObjectWriter WRITER = MAPPER.writer(new DefaultPrettyPrinter());
     private static final LinkedHashMap<EventId,Event> EVENTS = getAllEvents();
     public static void main(String[] args) throws JsonProcessingException, IOException {
-        while (true) {
+        int roleChoice = -1;
+        while (roleChoice != 4) {
             System.out.println("Choose a role:");
             System.out.println("1. Organizer");
             System.out.println("2. Attendee");
             System.out.println("3. Volunteer");
-            int roleChoice = INPUT.nextInt();
+            System.out.println("4. Exit");
+            roleChoice = INPUT.nextInt();
             INPUT.nextLine(); // Consume the newline character
 
             switch (roleChoice) {
@@ -45,18 +52,31 @@ public class EventManagementSystem {
                 case 3:
                     processVolunteer();
                     break;
+                case 4:
+                    System.out.println("Thank you for using our service. Please come again.");
                 default:
                     System.out.println("Invalid choice. Enter a valid choice");
             }
         }
     }
 
+    private static<T extends User> void updateUser(T newUser, String filepath, Class<T> cls) throws IOException{
+        LinkedHashSet<T> oldstuff = MAPPER.readValue(new File(filepath), new TypeReference<LinkedHashSet<T>>(){});
+        oldstuff.removeIf((user) -> user.getId().equals(newUser.getId()));
+        oldstuff.add(newUser);
+        WRITER.writeValue(new File(filepath), oldstuff);
+    }
+
+    // private static LinkedHashSet<EventId> getOfflineEvents(){
+        
+    // }
+
     private static LinkedHashMap<EventId, Event> getAllEvents(){
         LinkedHashMap<EventId,Event> eventMap = new LinkedHashMap<>();
         try{
         LinkedHashSet<OfflineEvent> offlineEvents = MAPPER.readValue(new File(OfflineEvent.OFFLINE_FILE),
         new TypeReference<LinkedHashSet<OfflineEvent>>() {});
-         LinkedHashSet<OnlineEvent> onlineEvents = MAPPER.readValue(new File(OfflineEvent.OFFLINE_FILE),
+         LinkedHashSet<OnlineEvent> onlineEvents = MAPPER.readValue(new File(OnlineEvent.ONLINE_FILE),
         new TypeReference<LinkedHashSet<OnlineEvent>>() {});
         for(Event e: offlineEvents){
             eventMap.put(e.getId(), e);
@@ -65,9 +85,14 @@ public class EventManagementSystem {
             eventMap.put(e.getId(), e);
         }
     }catch(IOException e){
+        System.out.println(e);
         return null;
     }
         return eventMap;
+    }
+
+    private static void updateAllEvents(LinkedHashMap<EventId, Event> eventMap){
+
     }
 
     private static void processOrganizer() throws JsonProcessingException, IOException{
@@ -91,6 +116,7 @@ public class EventManagementSystem {
                 break;
             default:
                 System.out.println("Invalid choice. Enter a valid choice ");
+                break;
         }
         }while(organizer == null);  
         int choice = -1;
@@ -114,7 +140,12 @@ public class EventManagementSystem {
                     break;
                 case 3:
                     System.out.println("Enter event ID to cancel:");
-                    EventId id =  new EventId(INPUT.nextLine());
+                    ArrayList<EventId> ids = new ArrayList<>(organizer.getEvents());
+                    for(int i = 0 ; i<ids.size(); i++){
+                        System.out.println(i+1 + ". "+ ids.get(i));
+                    }
+                    EventId id =  ids.get(Integer.parseInt(INPUT.nextLine()) - 1);
+                    System.out.println(id);
                     organizer.cancelEvent(id);
                     EVENTS.remove(id);
                     break;
@@ -123,6 +154,7 @@ public class EventManagementSystem {
                     return;
                 default:
                     System.out.println("Invalid choice.");
+                    break;
             }
         }
     }
@@ -169,28 +201,45 @@ public class EventManagementSystem {
                     }
                     break;
                 case 2:
-                    System.out.println("Enter the event ID : ");
-                    EventId id = new EventId(INPUT.nextLine());
-                    attendee.registerForEvent(id);
-                    EVENTS.get(id).registerAttendee(attendee.getId());
+                    System.out.println("Enter event ID:");
+                    ArrayList<EventId> ids = new ArrayList<>(EVENTS.keySet());
+                    for(int i = 0 ; i<ids.size(); i++){
+                        System.out.println(i+1 + ". "+ ids.get(i));
+                    }
+                    EventId id =  ids.get(Integer.parseInt(INPUT.nextLine()) - 1);
+                    System.out.println(id);
+                    try{
+                        attendee.registerForEvent(id, EVENTS);
+                        EVENTS.get(id).registerAttendee(attendee.getId());
+                    }catch(AlreadyParticipatedException | ConflictingParticipationException e){
+                        System.out.println(e);
+                    }
                     break;
                 case 3:
                     System.out.println("Enter event ID to cancel:");
-                    EventId eventId = new EventId(INPUT.nextLine());
-                    attendee.cancelRegistration(eventId);
-                    EVENTS.get(eventId).unregisterAttendee(attendee.getId());
+                    ArrayList<EventId> IDs = new ArrayList<>(attendee.getEvents());
+                    for(int i = 0 ; i<IDs.size(); i++){
+                        System.out.println(i+1 + ". "+ IDs.get(i));
+                    }
+                    EventId ID =  IDs.get(Integer.parseInt(INPUT.nextLine()) - 1);
+                    System.out.println(ID);
+                    attendee.cancelRegistration(ID);
+                    EVENTS.get(ID).unregisterAttendee(attendee.getId());
                     break;
                 case 4:
                     attendee.displayEvents(EVENTS);
+                    break;
                 case 5:
                     for(EventId event:attendee.getEvents()){
                         EVENTS.get(event).notification(attendee.getId());
                     }
+                    break;
                 case 6:
                     System.out.println("Exiting...");
                     return;
                 default:
                     System.out.println("Invalid choice.");
+                    break;
             }
         }
     }
@@ -217,6 +266,7 @@ public class EventManagementSystem {
                     break;
                 default:
                     System.out.println("Invalid choice");
+                    break;
             }
         }while (volunteer == null);
         int choice = -1;
@@ -239,23 +289,35 @@ public class EventManagementSystem {
                     }
                     break;
                 case 2:
-                    System.out.println("Enter the event ID : ");
-                    EventId id = new EventId(INPUT.nextLine());
-                    volunteer.registerForEvent(id);
-                    EVENTS.get(id).registerVolunteer(volunteer.getId());
+                    System.out.println("Enter event ID:");
+                    ArrayList<EventId> ids = new ArrayList<>(EVENTS.keySet());
+                    for(int i = 0 ; i<ids.size(); i++){
+                        System.out.println(i+1 + ". "+ ids.get(i));
+                    }
+                    EventId id =  ids.get(Integer.parseInt(INPUT.nextLine()) - 1);
+                    System.out.println(id);
+                    volunteer.registerForEvent(id, EVENTS);
+                    EVENTS.get(id).registerAttendee(volunteer.getId());
                     break;
                 case 3:
                     System.out.println("Enter event ID to cancel:");
-                    EventId eventId = new EventId(INPUT.nextLine());
-                    volunteer.cancelRegistration(eventId);
-                    EVENTS.get(eventId).unregisterVolunteer(volunteer.getId());
+                    ArrayList<EventId> IDs = new ArrayList<>(volunteer.getEvents());
+                    for(int i = 0 ; i<IDs.size(); i++){
+                        System.out.println(i+1 + ". "+ IDs.get(i));
+                    }
+                    EventId ID =  IDs.get(Integer.parseInt(INPUT.nextLine()) - 1);
+                    System.out.println(ID);
+                    volunteer.cancelRegistration(ID);
+                    EVENTS.get(ID).unregisterAttendee(volunteer.getId());
                     break;
                 case 4:
                     volunteer.displayEvents(EVENTS);
+                    break;
                 case 5:
                     for(EventId event:volunteer.getEvents()){
                         EVENTS.get(event).notification(volunteer.getId());
                     }
+                    break;
                 case 6:
                     System.out.println("Exiting...");
                     return;
@@ -385,7 +447,7 @@ public class EventManagementSystem {
             // Check if the provided username-password pair exists in the file
             int lineNum = isValidCredentials(username, password, credFilepath);
             if (lineNum > 0) {
-                JsonNode userNode = MAPPER.readTree(new File(dataFilePath)).get(lineNum);
+                JsonNode userNode = MAPPER.readTree(new File(dataFilePath)).get(lineNum-1);
                 return Attendee.readFromJSON(userNode);
 
             } else {
@@ -438,7 +500,7 @@ public class EventManagementSystem {
             // Check if the provided username-password pair exists in the file
             int lineNum = isValidCredentials(username, password, credFilepath);
             if (lineNum > 0) {
-                JsonNode userNode = MAPPER.readTree(new File(dataFilePath)).get(lineNum);
+                JsonNode userNode = MAPPER.readTree(new File(dataFilePath)).get(lineNum-1);
                 return Volunteer.readFromJSON(userNode);
             } else {
                 System.out.println("Invalid username or password. Login failed.");

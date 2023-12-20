@@ -3,7 +3,10 @@ package events;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 import users.Organizer;
 import users.UserId;
 
@@ -21,6 +24,8 @@ public class OnlineEvent extends Event {
     private String volunteerUrl;
     public static String ONLINE_FILE = "app/src/main/files/events/online_events.json";
     // Constructors
+
+    public OnlineEvent(){}
     public OnlineEvent(EventId id, String name, Organizer organizer, int maxParticipants, int maxVolunteers,
                        String contactNumber, String contactEmail, String description,
                        LocalDateTime start, LocalDateTime end, String attendeeUrl, String volunteerUrl) {
@@ -64,7 +69,8 @@ public class OnlineEvent extends Event {
             LinkedHashSet<OnlineEvent> events = objectMapper.readValue(new File(ONLINE_FILE), 
             new TypeReference<LinkedHashSet<OnlineEvent>>() {});
             events.add(this);
-            objectMapper.writeValue(new File(ONLINE_FILE), events);
+            ObjectWriter writer = objectMapper.writer(new DefaultPrettyPrinter());
+            writer.writeValue(new File(ONLINE_FILE), events);
         }catch(IOException e){
             System.out.println("Error appending object: " + e.getMessage());
         }

@@ -13,12 +13,17 @@ import java.util.LinkedHashSet;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 public class OfflineEvent extends Event {
     private Location location;
     public static String OFFLINE_FILE = "app/src/main/files/events/offline_events.json";
     // Constructors
+
+    public OfflineEvent(){}
+    
     public OfflineEvent(EventId id, String name, Organizer organizer, int maxParticipants, int maxVolunteers,
                         String contactNumber, String contactEmail, String description,
                         LocalDateTime start, LocalDateTime end, Location location) {
@@ -56,7 +61,8 @@ public class OfflineEvent extends Event {
             LinkedHashSet<OfflineEvent> events = objectMapper.readValue(new File(OFFLINE_FILE), 
             new TypeReference<LinkedHashSet<OfflineEvent>>() {});
             events.add(this);
-            objectMapper.writeValue(new File(OFFLINE_FILE), events);
+            ObjectWriter writer = objectMapper.writer(new DefaultPrettyPrinter());
+            writer.writeValue(new File(OFFLINE_FILE), events);
         }catch(IOException e){
             System.out.println("Error appending object: " + e.getMessage());
         }

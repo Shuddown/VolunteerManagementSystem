@@ -1,1 +1,79 @@
-[{"id":{"id":"m_ucm49hDTorhw_Si7R4L7M2RPngaXq3QcAz_Fa2FFs3etGMMA736NSzLFWvvBJDOP-yCP84zW0rVn3rVQYtS1YM_biw74vp7_pmZVFx-GByw9JQXriKXw=="},"eventName":"sunfeast","organizer":{"id":{"id":"nTOcISkFJBkeenUJDniqf1RxYqzRHAPL8QJ81uyKwIwMf4593xrPtFBk7wu7LnzmeqKnJX0ENdQ="},"username":"joe","age":45,"address":{"address":"Chennai","coordinates":{"latitude":13.0836939,"longitude":80.270186}},"events":[],"contactNumber":"123434656","contactMail":"hello"},"maxParticipants":34,"maxVolunteers":45,"contactNumber":"sadf","contactEmail":"adsf","description":"sadf","start"
+[ {
+  "id" : {
+    "id" : "xj1UUG4="
+  },
+  "eventName" : "Sunfeast",
+  "organizer" : {
+    "id" : {
+      "id" : "EB_Q"
+    },
+    "username" : "John",
+    "age" : 23,
+    "address" : {
+      "address" : "Sholinganallur",
+      "coordinates" : {
+        "latitude" : 12.9174426,
+        "longitude" : 80.21649018230858
+      }
+    },
+    "events" : [ ],
+    "contactNumber" : "2030327",
+    "contactMail" : "shudhesh@gmail.com"
+  },
+  "maxParticipants" : 23,
+  "maxVolunteers" : 10,
+  "contactNumber" : "3030327",
+  "contactEmail" : "shud@gmail.com",
+  "description" : "This is the best event in the history of events, maybe ever.",
+  "start" : [ 2023, 12, 21, 10, 30 ],
+  "end" : [ 2023, 12, 22, 11, 30 ],
+  "registeredAttendees" : [ ],
+  "registeredVolunteers" : [ ],
+  "location" : {
+    "address" : "Anna Nagar, Chennai",
+    "coordinates" : {
+      "latitude" : 13.0872004,
+      "longitude" : 80.2164421
+    }
+  }
+}, {
+  "id" : {
+    "id" : "3xbXiXc="
+  },
+  "eventName" : "Yippee",
+  "organizer" : {
+    "id" : {
+      "id" : "EB_Q"
+    },
+    "username" : "John",
+    "age" : 23,
+    "address" : {
+      "address" : "Sholinganallur",
+      "coordinates" : {
+        "latitude" : 12.9174426,
+        "longitude" : 80.21649018230858
+      }
+    },
+    "events" : [ {
+      "id" : "xj1UUG4="
+    } ],
+    "contactNumber" : "2030327",
+    "contactMail" : "shudhesh@gmail.com"
+  },
+  "maxParticipants" : 10,
+  "maxVolunteers" : 1,
+  "contactNumber" : "30302323",
+  "contactEmail" : "help@gmail.com",
+  "description" : "this is second best event",
+  "start" : [ 2024, 3, 12, 10, 30 ],
+  "end" : [ 2025, 3, 12, 11, 30 ],
+  "registeredAttendees" : [ ],
+  "registeredVolunteers" : [ ],
+  "location" : {
+    "address" : "Bangalore",
+    "coordinates" : {
+      "latitude" : 12.9767936,
+      "longitude" : 77.590082
+    }
+  }
+} ]

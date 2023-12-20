@@ -1,1 +1,17 @@
-[{"id":{"id":"nTOcISkFJBkeenUJDniqf1RxYqzRHAPL8QJ81uyKwIwMf4593xrPtFBk7wu7LnzmeqKnJX0ENdQ="},"username":"joe","age":45,"address":{"address":"Chennai","coordinates":{"latitude":13.0836939,"longitude":80.270186}},"events":[],"contactNumber":"123434656","contactMail":"hello"}]
+[ {
+  "id" : {
+    "id" : "EB_Q"
+  },
+  "username" : "John",
+  "age" : 23,
+  "address" : {
+    "address" : "Sholinganallur",
+    "coordinates" : {
+      "latitude" : 12.9174426,
+      "longitude" : 80.21649018230858
+    }
+  },
+  "events" : [ ],
+  "contactNumber" : "2030327",
+  "contactMail" : "shudhesh@gmail.com"
+} ]
