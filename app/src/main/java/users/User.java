@@ -1,7 +1,7 @@
 package users;
 import events.*;
-import json.JSONConvertable;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
@@ -9,7 +9,7 @@ import common.Displayable;
 import common.Location;
 
 
-abstract public class User implements EventInteract, JSONConvertable<User>, Displayable{
+abstract public class User implements EventInteract, Displayable{
 
     protected UserId id;
     protected String username;
@@ -36,6 +36,25 @@ abstract public class User implements EventInteract, JSONConvertable<User>, Disp
 
     abstract public void displayDetails();
 
+    public boolean isOverlapping(LocalDateTime startFirst, LocalDateTime endFirst, LocalDateTime startSecond, LocalDateTime endSecond){
+        return (startFirst.isBefore(endSecond) && endFirst.isAfter(startSecond));
+    }
+
+
+    public boolean isParticipationConflict(EventId nextEventId, LinkedHashMap<EventId, Event> eventMap){
+        LocalDateTime nextEventStart = eventMap.get(nextEventId).getStart();
+        LocalDateTime nextEventEnd = eventMap.get(nextEventId).getEnd();
+
+        for(EventId committedEventId : events){
+            Event committedEvent =  eventMap.get(committedEventId);
+            LocalDateTime committedStart = committedEvent.getStart();
+            LocalDateTime committedEnd = committedEvent.getEnd();
+            if(isOverlapping(committedStart, committedEnd, nextEventStart, nextEventEnd))
+                return true;
+        }
+        return false;
+    }
+
     public UserId getId() {
         return id;
     }
@@ -54,6 +73,18 @@ abstract public class User implements EventInteract, JSONConvertable<User>, Disp
 
     public LinkedHashSet<EventId> getEvents() {
         return events;
+    }
+
+    @Override
+    public boolean equals(Object other){
+        if(!(other instanceof User)) return false;
+        User otherUser = (User) other;
+        return this.getId().equals(otherUser.getId());
+    }
+
+    @Override
+    public int hashCode(){
+        return this.getId().hashCode();
     }
 
 }

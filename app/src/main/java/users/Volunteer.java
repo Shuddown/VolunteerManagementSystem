@@ -1,37 +1,33 @@
 package users;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.LocalDateTime;
+import static json.CustomJson.addJsonToJsonArray;
+
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import java.util.Scanner;
 
 import common.Location;
-import events.*;
+import events.Event;
+import events.EventId;
+import events.EventRegistration;
 import exceptions.ConflictingParticipationException;
+import volunteermanagementsystem.UserOperation;
 
-public class Volunteer extends User implements EventRegistration{
+public class Volunteer extends User implements EventRegistration, UserOperation<Volunteer>{
 
     public static final String VOLUNTEER_FILE = "app/src/main/files/users/volunteers.json";
+    public static final Scanner INPUT = new Scanner(System.in);
     private String contactNumber;
 
-    public Volunteer(){}
+    public Volunteer() {
+    }
 
     public Volunteer(UserId id, String username, int age, Location address, String contactNumber,
             LinkedHashSet<EventId> organizedEvents) {
         super(id, username, age, address, organizedEvents);
         this.contactNumber = contactNumber;
     }
-    
+
     @Override
     public void cancelRegistration(EventId event) {
         events.remove(event);
@@ -39,28 +35,9 @@ public class Volunteer extends User implements EventRegistration{
 
     @Override
     public void registerForEvent(EventId eventId, LinkedHashMap<EventId, Event> eventMap) {
-        if(isParticipationConflict(eventId, eventMap))
+        if (isParticipationConflict(eventId, eventMap))
             throw new ConflictingParticipationException();
         events.add(eventId);
-    }
-
-    public boolean isOverlapping(LocalDateTime startFirst, LocalDateTime endFirst, LocalDateTime startSecond, LocalDateTime endSecond){
-        return (startFirst.isBefore(endSecond) && endFirst.isAfter(startSecond));
-    }
-
-
-    public boolean isParticipationConflict(EventId nextEventId, LinkedHashMap<EventId, Event> eventMap){
-        LocalDateTime nextEventStart = eventMap.get(nextEventId).getStart();
-        LocalDateTime nextEventEnd = eventMap.get(nextEventId).getEnd();
-
-        for(EventId committedEventId : events){
-            Event committedEvent =  eventMap.get(committedEventId);
-            LocalDateTime committedStart = committedEvent.getStart();
-            LocalDateTime committedEnd = committedEvent.getEnd();
-            if(isOverlapping(committedStart, committedEnd, nextEventStart, nextEventEnd))
-                return false;
-        }
-        return true;
     }
 
     @Override
@@ -73,26 +50,9 @@ public class Volunteer extends User implements EventRegistration{
         System.out.println();
     }
 
-    public static Volunteer readFromJSON(JsonNode volunteerJson) throws JsonProcessingException{
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        Volunteer volunteer = objectMapper.treeToValue(volunteerJson,Volunteer.class);
-        return volunteer;
-    }
-
     @Override
     public void writeToJSON() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        try{
-            LinkedHashSet<Volunteer> volunteers = objectMapper.readValue(new File(VOLUNTEER_FILE), 
-            new TypeReference<LinkedHashSet<Volunteer>>() {});
-            volunteers.add(this);
-            ObjectWriter writer = objectMapper.writer(new DefaultPrettyPrinter());
-            writer.writeValue(new File(VOLUNTEER_FILE), volunteers);
-        }catch(IOException e){
-            System.out.println("Error appending object: " + e.getMessage());
-        }
+        addJsonToJsonArray(VOLUNTEER_FILE, this, this.getClass());
     }
 
     public static String getVolunteerFile() {
@@ -102,5 +62,20 @@ public class Volunteer extends User implements EventRegistration{
     public String getContactNumber() {
         return contactNumber;
     }
-    
+
+    @Override
+    public Volunteer signUp(Volunteer volunteer){
+        System.out.println("Enter name: ");
+        String name = INPUT.nextLine();
+        System.out.println("Enter age: ");
+        int age = Integer.parseInt(INPUT.nextLine());
+        Location address = Location.getLocation("your");
+        System.out.println("Give your number: ");
+        String number = INPUT.nextLine();
+        volunteer = new Volunteer(UserId.getUniqueUserId(VOLUNTEER_FILE),
+                name, age, address, number, new LinkedHashSet<EventId>());
+        volunteer.writeToJSON();
+        return volunteer;
+    }
+
 }

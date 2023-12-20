@@ -8,7 +8,7 @@ import java.time.*;
 import java.time.temporal.ChronoUnit;
 
 
-abstract public class Event implements JSONConvertable<Event>, Displayable{
+abstract public class Event implements JSONConvertable, Displayable{
     protected EventId id;
     protected String eventName;
     protected Organizer organizer;
@@ -143,10 +143,36 @@ abstract public class Event implements JSONConvertable<Event>, Displayable{
         }
     }
 
+    public String getEventName(){
+        return eventName;
+    }
+
+    public void displayDetails(){
+        System.out.println("Name: " + getEventName());
+        System.out.println("Event ID: " + getId());
+        System.out.println("Organizer: " + getOrganizer().getUsername());
+        System.out.println("Start Time: " + getStart().toString());
+        System.out.println("End Time: " + getEnd().toString());
+        System.out.println("Contact Number: " + getContactNumber());
+        System.out.println("Contact Email: " + getContactEmail());
+        System.out.println("Max Participants: " + getMaxParticipants());
+        System.out.println("Max Volunteers: " + getMaxVolunteers());
+    }
+
+
+    @Override
+    public boolean equals(Object other){
+        if(!(other instanceof Event)) return false;
+        Event otherEvent = (Event) other;
+        return this.getId().equals(otherEvent.getId());
+    }
+
+    @Override
+    public int hashCode(){
+        return this.getId().hashCode();
+    }
+
 
     // Abstract methods
-    public abstract void displayDetails();
-    public abstract void writeToJSON();
-    public abstract void readFromJSON();
 }
 

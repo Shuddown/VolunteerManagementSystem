@@ -3,34 +3,42 @@
  */
 package volunteermanagementsystem;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import static json.CustomJson.MAPPER;
+import static json.CustomJson.WRITER;
+import static json.CustomJson.writeJsonToFile;
 
-
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Scanner;
-import java.util.ArrayList;
-import java.io.*;
-import exceptions.*;
-import users.*;
 
-import java.util.regex.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
-import common.*;
-import events.*;
+import events.Event;
+import events.EventId;
+import events.OfflineEvent;
+import events.OnlineEvent;
+import exceptions.AlreadyParticipatedException;
+import exceptions.ConflictingParticipationException;
+import exceptions.InvalidLoginException;
+import json.CustomJson;
+import json.JSONConvertable;
+import users.Attendee;
+import users.Organizer;
+import users.User;
+import users.Volunteer;
+
 
 public class EventManagementSystem {
     private static final Scanner INPUT = new Scanner(System.in);
-    private static final ObjectMapper MAPPER = (new ObjectMapper()).setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY).findAndRegisterModules();
-    private static final ObjectWriter WRITER = MAPPER.writer(new DefaultPrettyPrinter());
-    private static final LinkedHashMap<EventId,Event> EVENTS = getAllEvents();
+    private static final LinkedHashSet<OfflineEvent> OFFLINE_EVENTS = CustomJson.objectArrayFromFile(OfflineEvent.OFFLINE_FILE, OfflineEvent.class);
+    private static final LinkedHashSet<OnlineEvent> ONLINE_EVENTS = CustomJson.objectArrayFromFile(OnlineEvent.ONLINE_FILE, OnlineEvent.class);
+    private static final LinkedHashMap<EventId, Event> EVENTS = allEvents(OFFLINE_EVENTS, ONLINE_EVENTS);
+
     public static void main(String[] args) throws JsonProcessingException, IOException {
         int roleChoice = -1;
         while (roleChoice != 4) {
@@ -54,71 +62,89 @@ public class EventManagementSystem {
                     break;
                 case 4:
                     System.out.println("Thank you for using our service. Please come again.");
+                    break;
                 default:
                     System.out.println("Invalid choice. Enter a valid choice");
+                    break;
             }
+
+            updateEvents(OFFLINE_EVENTS,OfflineEvent.OFFLINE_FILE);
+            updateEvents(ONLINE_EVENTS, OnlineEvent.ONLINE_FILE);
+
         }
     }
 
-    private static<T extends User> void updateUser(T newUser, String filepath, Class<T> cls) throws IOException{
-        LinkedHashSet<T> oldstuff = MAPPER.readValue(new File(filepath), new TypeReference<LinkedHashSet<T>>(){});
-        oldstuff.removeIf((user) -> user.getId().equals(newUser.getId()));
-        oldstuff.add(newUser);
+    private static LinkedHashMap<EventId, Event> allEvents(LinkedHashSet<OfflineEvent> offlineEvents,
+     LinkedHashSet<OnlineEvent> onlineEvents) {
+        LinkedHashMap<EventId, Event> result = new LinkedHashMap<>();
+        for(Event event : offlineEvents){
+            result.put(event.getId(), event);
+        }
+        for(Event event : onlineEvents){
+            result.put(event.getId(), event);
+        }
+        return result;
+    }
+
+    private static<T extends Event> void updateEvents(LinkedHashSet<T> events, String filePath) {
+        String json = CustomJson.toJsonArray(events);
+        writeJsonToFile(filePath, json);
+    }
+
+    private static <T extends User> void updateUser(T newUser, String filepath) throws IOException {
+        ArrayList<T> oldstuff = MAPPER.readValue(new File(filepath), MAPPER.getTypeFactory().constructCollectionType(ArrayList.class, newUser.getClass()));
+        int userIndex = oldstuff.indexOf(newUser);
+        oldstuff.set(userIndex, newUser);
         WRITER.writeValue(new File(filepath), oldstuff);
     }
 
-    // private static LinkedHashSet<EventId> getOfflineEvents(){
-        
-    // }
 
-    private static LinkedHashMap<EventId, Event> getAllEvents(){
-        LinkedHashMap<EventId,Event> eventMap = new LinkedHashMap<>();
-        try{
-        LinkedHashSet<OfflineEvent> offlineEvents = MAPPER.readValue(new File(OfflineEvent.OFFLINE_FILE),
-        new TypeReference<LinkedHashSet<OfflineEvent>>() {});
-         LinkedHashSet<OnlineEvent> onlineEvents = MAPPER.readValue(new File(OnlineEvent.ONLINE_FILE),
-        new TypeReference<LinkedHashSet<OnlineEvent>>() {});
-        for(Event e: offlineEvents){
-            eventMap.put(e.getId(), e);
-        }
-        for(Event e: onlineEvents){
-            eventMap.put(e.getId(), e);
-        }
-    }catch(IOException e){
-        System.out.println(e);
-        return null;
+    private static <T extends User & UserOperation<T>> T signUpOrLogin(T user, String userCredentialsFile,
+            String userDataFile, Class<T> clazz) {
+        String className = user.getClass().getSimpleName();
+        boolean validChoice;
+        do {
+            validChoice = true;
+            System.out.println("Choose an action:");
+            System.out.println("1. Sign Up");
+            System.out.println("2. Log In");
+            System.out.println("3. Exit");
+
+            int actionChoice = INPUT.nextInt();
+            INPUT.nextLine(); // Consume the newline character
+            switch (actionChoice) {
+                case 1:
+                    System.out.println(className + " Sign Up");
+                    Credentials.addUsernameAndPassword(userCredentialsFile);
+                    user = user.signUp(user);
+                    break;
+                case 2:
+                    System.out.println(className + " Log In");
+                    try{
+                    user = login(userCredentialsFile, userDataFile, clazz);
+                    }catch(InvalidLoginException e){
+                        System.out.println(e);
+                        validChoice = false;
+                    }
+                    break;
+                case 3:
+                    return null;
+                default:
+                    System.out.println("Invalid choice. Enter a valid choice ");
+                    validChoice = false;
+                    break;
+            }
+        } while (!validChoice);
+        return user;
     }
-        return eventMap;
-    }
 
-    private static void updateAllEvents(LinkedHashMap<EventId, Event> eventMap){
-
-    }
-
-    private static void processOrganizer() throws JsonProcessingException, IOException{
+    private static void processOrganizer() throws JsonProcessingException, IOException {
         final String ORGANIZER_CREDENTIALS = "app/src/main/files/login/organizer_credentials.txt";
-        Organizer organizer = null;
-        do{
-        System.out.println("Choose an action:");
-        System.out.println("1. Sign Up");
-        System.out.println("2. Log In");
-
-        int actionChoice = INPUT.nextInt();
-        INPUT.nextLine(); // Consume the newline character
-        switch (actionChoice) {
-            case 1:
-                System.out.println("Organizer Sign Up");
-                organizer = organizerSignUp(ORGANIZER_CREDENTIALS);
-                break;
-            case 2:
-                System.out.println("Organizer Log In");
-                organizer = organizerLogin(ORGANIZER_CREDENTIALS, Organizer.ORGANIZER_FILE);
-                break;
-            default:
-                System.out.println("Invalid choice. Enter a valid choice ");
-                break;
+        Organizer organizer = signUpOrLogin(new Organizer(), ORGANIZER_CREDENTIALS, Organizer.ORGANIZER_FILE, Organizer.class);
+        if (organizer == null){
+            System.out.println("Error?");
+            return;
         }
-        }while(organizer == null);  
         int choice = -1;
         while (choice != 4) {
             System.out.println("Choose an action:");
@@ -134,6 +160,10 @@ public class EventManagementSystem {
                 case 1:
                     Event newEvent = organizer.createEvent(EVENTS);
                     EVENTS.put(newEvent.getId(), newEvent);
+                    if(newEvent instanceof OnlineEvent)
+                        ONLINE_EVENTS.add( (OnlineEvent) newEvent);
+                    else if(newEvent instanceof OfflineEvent)
+                        OFFLINE_EVENTS.add( (OfflineEvent) newEvent);
                     break;
                 case 2:
                     organizer.displayEvents(EVENTS);
@@ -141,16 +171,17 @@ public class EventManagementSystem {
                 case 3:
                     System.out.println("Enter event ID to cancel:");
                     ArrayList<EventId> ids = new ArrayList<>(organizer.getEvents());
-                    for(int i = 0 ; i<ids.size(); i++){
-                        System.out.println(i+1 + ". "+ ids.get(i));
+                    for (int i = 0; i < ids.size(); i++) {
+                        System.out.println(i + 1 + ". " + ids.get(i));
                     }
-                    EventId id =  ids.get(Integer.parseInt(INPUT.nextLine()) - 1);
+                    EventId id = ids.get(Integer.parseInt(INPUT.nextLine()) - 1);
                     System.out.println(id);
                     organizer.cancelEvent(id);
                     EVENTS.remove(id);
                     break;
                 case 4:
                     System.out.println("Exiting...");
+                    updateUser(organizer, Organizer.ORGANIZER_FILE);
                     return;
                 default:
                     System.out.println("Invalid choice.");
@@ -159,28 +190,11 @@ public class EventManagementSystem {
         }
     }
 
-    private static void processAttendee() {
+    private static void processAttendee() throws IOException{
         final String ATTENDEE_CREDENTIALS = "app/src/main/files/login/attendee_credentials.txt";
-        Attendee attendee = null;
-        do{
-        System.out.println("Choose an action:");
-        System.out.println("1. Sign Up");
-        System.out.println("2. Log In");
-        int actionChoice = INPUT.nextInt();
-        INPUT.nextLine(); // Consume the newline character
-
-        switch (actionChoice) {
-            case 1:
-                attendee = attendeeSignUp(ATTENDEE_CREDENTIALS);
-                break;
-            case 2:
-                System.out.println("Attendee Log In");
-                attendee = attendeeLogin(ATTENDEE_CREDENTIALS, Attendee.ATTENDEE_FILE);
-                break;
-            default:
-                System.out.println("Invalid choice");
-        }
-        }while(attendee == null);
+        Attendee attendee = signUpOrLogin(new Attendee(), ATTENDEE_CREDENTIALS, Attendee.ATTENDEE_FILE, Attendee.class);
+        if (attendee == null)
+            return;
         int choice = -1;
         while (choice != 6) {
             System.out.println("Choose an action:");
@@ -196,41 +210,42 @@ public class EventManagementSystem {
 
             switch (choice) {
                 case 1:
-                    for( EventId id : EVENTS.keySet()){
+                    for (EventId id : EVENTS.keySet()) {
                         EVENTS.get(id).displayDetails();
                     }
                     break;
                 case 2:
                     System.out.println("Enter event ID:");
                     ArrayList<EventId> ids = new ArrayList<>(EVENTS.keySet());
-                    for(int i = 0 ; i<ids.size(); i++){
-                        System.out.println(i+1 + ". "+ ids.get(i));
+                    for (int i = 0; i < ids.size(); i++) {
+                        System.out.println(i + 1 + ". " + ids.get(i));
                     }
-                    EventId id =  ids.get(Integer.parseInt(INPUT.nextLine()) - 1);
+                    EventId id = ids.get(Integer.parseInt(INPUT.nextLine()) - 1);
                     System.out.println(id);
-                    try{
+                    try {
                         attendee.registerForEvent(id, EVENTS);
                         EVENTS.get(id).registerAttendee(attendee.getId());
-                    }catch(AlreadyParticipatedException | ConflictingParticipationException e){
+                    } catch (AlreadyParticipatedException | ConflictingParticipationException e) {
                         System.out.println(e);
                     }
                     break;
                 case 3:
                     System.out.println("Enter event ID to cancel:");
                     ArrayList<EventId> IDs = new ArrayList<>(attendee.getEvents());
-                    for(int i = 0 ; i<IDs.size(); i++){
-                        System.out.println(i+1 + ". "+ IDs.get(i));
+                    for (int i = 0; i < IDs.size(); i++) {
+                        System.out.println(i + 1 + ". " + IDs.get(i));
                     }
-                    EventId ID =  IDs.get(Integer.parseInt(INPUT.nextLine()) - 1);
+                    EventId ID = IDs.get(Integer.parseInt(INPUT.nextLine()) - 1);
                     System.out.println(ID);
                     attendee.cancelRegistration(ID);
                     EVENTS.get(ID).unregisterAttendee(attendee.getId());
                     break;
                 case 4:
                     attendee.displayEvents(EVENTS);
+                    updateUser(attendee, Attendee.ATTENDEE_FILE);
                     break;
                 case 5:
-                    for(EventId event:attendee.getEvents()){
+                    for (EventId event : attendee.getEvents()) {
                         EVENTS.get(event).notification(attendee.getId());
                     }
                     break;
@@ -246,31 +261,9 @@ public class EventManagementSystem {
 
     private static void processVolunteer() throws IOException{
         final String VOLUNTEER_CREDENTIALS = "app/src/main/files/login/volunteer_credentials.txt";
-        Volunteer volunteer = null;
-        do {
-            System.out.println("Choose an action:");
-            System.out.println("1. Sign Up");
-            System.out.println("2. Log In");
-
-            int actionChoice = INPUT.nextInt();
-            INPUT.nextLine(); // Consume the newline character
-
-            switch (actionChoice) {
-                case 1:
-                    System.out.println("Volunteer Sign Up");
-                    volunteer = volunteerSignUp(VOLUNTEER_CREDENTIALS);
-                    break;
-                case 2:
-                    System.out.println("Volunteer Log In");
-                    volunteer = volunteerLogin(VOLUNTEER_CREDENTIALS, Volunteer.VOLUNTEER_FILE);
-                    break;
-                default:
-                    System.out.println("Invalid choice");
-                    break;
-            }
-        }while (volunteer == null);
+        Volunteer volunteer = signUpOrLogin(new Volunteer(), VOLUNTEER_CREDENTIALS, Volunteer.VOLUNTEER_FILE, Volunteer.class);
         int choice = -1;
-        while(choice != 6){
+        while (choice != 6) {
             System.out.println("Choose an action:");
             System.out.println("1. Display available events ");
             System.out.println("2. Volunteer  for event");
@@ -284,157 +277,52 @@ public class EventManagementSystem {
 
             switch (choice) {
                 case 1:
-                    for( EventId id : EVENTS.keySet()){
+                    for (EventId id : EVENTS.keySet()) {
                         EVENTS.get(id).displayDetails();
                     }
                     break;
                 case 2:
                     System.out.println("Enter event ID:");
                     ArrayList<EventId> ids = new ArrayList<>(EVENTS.keySet());
-                    for(int i = 0 ; i<ids.size(); i++){
-                        System.out.println(i+1 + ". "+ ids.get(i));
+                    for (int i = 0; i < ids.size(); i++) {
+                        System.out.println(i + 1 + ". " + ids.get(i));
                     }
-                    EventId id =  ids.get(Integer.parseInt(INPUT.nextLine()) - 1);
+                    EventId id = ids.get(Integer.parseInt(INPUT.nextLine()) - 1);
                     System.out.println(id);
                     volunteer.registerForEvent(id, EVENTS);
-                    EVENTS.get(id).registerAttendee(volunteer.getId());
+                    EVENTS.get(id).registerVolunteer(volunteer.getId());
                     break;
                 case 3:
                     System.out.println("Enter event ID to cancel:");
                     ArrayList<EventId> IDs = new ArrayList<>(volunteer.getEvents());
-                    for(int i = 0 ; i<IDs.size(); i++){
-                        System.out.println(i+1 + ". "+ IDs.get(i));
+                    for (int i = 0; i < IDs.size(); i++) {
+                        System.out.println(i + 1 + ". " + IDs.get(i));
                     }
-                    EventId ID =  IDs.get(Integer.parseInt(INPUT.nextLine()) - 1);
+                    EventId ID = IDs.get(Integer.parseInt(INPUT.nextLine()) - 1);
                     System.out.println(ID);
                     volunteer.cancelRegistration(ID);
-                    EVENTS.get(ID).unregisterAttendee(volunteer.getId());
+                    EVENTS.get(ID).unregisterVolunteer(volunteer.getId());
                     break;
                 case 4:
                     volunteer.displayEvents(EVENTS);
                     break;
                 case 5:
-                    for(EventId event:volunteer.getEvents()){
+                    for (EventId event : volunteer.getEvents()) {
                         EVENTS.get(event).notification(volunteer.getId());
                     }
                     break;
                 case 6:
                     System.out.println("Exiting...");
+                    updateUser(volunteer, Volunteer.VOLUNTEER_FILE);
                     return;
                 default:
                     System.out.println("Invalid choice.");
-                }
             }
-
         }
 
-    private static LinkedHashSet<UserId> getUserIds(String filepath) throws IOException{
-        JsonNode idNode = MAPPER.readTree(new File(filepath));
-        LinkedHashSet<UserId> ids = new LinkedHashSet<>();
-        for (int i = 0; i < ids.size(); i++) {
-            ids.add(new UserId(idNode.get(i).textValue()));
-        }
-        return ids;
     }
 
-    private static LinkedHashSet<EventId> getEventIds(String filepath) throws IOException{
-        JsonNode idNode = MAPPER.readTree(new File(filepath));
-        LinkedHashSet<EventId> ids = new LinkedHashSet<>();
-        for (int i = 0; i < ids.size(); i++) {
-            ids.add(new EventId(idNode.get(i).textValue()));
-        }
-        return ids;
-    }
-
-    private static void addUsernameAndPassword(String filePath) {
-        try (
-                BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) {
-
-            System.out.println("Sign Up:");
-            System.out.print("Enter username: ");
-            String username = INPUT.nextLine();
-
-            // Check if the username already exists
-            if (isUsernameExists(username, filePath)) {
-                throw new InvalidUsernameException("Username already exists. Please choose a different username.");
-            }
-
-            // Validate password
-            String password;
-            do {
-                try {
-                    System.out.print(
-                            "Create a password (at least 6 characters, 1 capital letter, 1 special character): ");
-                    password = INPUT.nextLine();
-                    validatePassword(password);
-                } catch (InvalidPasswordException e) {
-                    System.out.println(e.getMessage());
-                    continue; // Prompt user for a new password
-                }
-                break; // Exit the loop if the password is valid
-
-            } while (true);
-
-            // Write the new username-password pair to the file
-            writer.write(username + "," + password);
-            writer.newLine();
-            System.out.println("Account created successfully.");
-
-        } catch (IOException | InvalidUsernameException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static Attendee attendeeSignUp(String filePath){
-        try{
-        addUsernameAndPassword(filePath);
-        System.out.println("Enter name: ");
-        String name = INPUT.nextLine();
-        System.out.println("Enter age: ");
-        int age = Integer.parseInt(INPUT.nextLine());
-        Location address = Location.getLocation("your");
-        Attendee attendee = new Attendee(UserId.getUniqueUserId(getUserIds(Attendee.ATTENDEE_FILE)),
-                name, age, address, new LinkedHashSet<EventId>());
-        attendee.writeToJSON();
-        return attendee;
-        }catch(IOException e){
-            return null;
-        }
-    }
-
-    private static Volunteer volunteerSignUp(String filePath) throws IOException{
-        addUsernameAndPassword(filePath);
-        System.out.println("Enter name: ");
-        String name = INPUT.nextLine();
-        System.out.println("Enter age: ");
-        int age = Integer.parseInt(INPUT.nextLine());
-        Location address = Location.getLocation("your");
-        System.out.println("Give your number: ");
-        String number = INPUT.nextLine();
-        Volunteer volunteer = new Volunteer(UserId.getUniqueUserId(getUserIds(Volunteer.VOLUNTEER_FILE)),
-                name, age, address, number, new LinkedHashSet<EventId>());
-        volunteer.writeToJSON();
-        return volunteer;
-    }
-
-    private static Organizer organizerSignUp(String filePath) throws JsonProcessingException, IOException{
-        addUsernameAndPassword(filePath);
-        System.out.println("Enter name: ");
-        String name = INPUT.nextLine();
-        System.out.println("Enter age: ");
-        int age = Integer.parseInt(INPUT.nextLine());
-        System.out.println("Enter contact mail : ");
-        String mail = INPUT.nextLine();
-        System.out.println("Enter contact phone number : ");
-        String number = INPUT.nextLine();
-        Location address = Location.getLocation("your");
-        Organizer organizer = new Organizer(UserId.getUniqueUserId(getUserIds(Organizer.ORGANIZER_FILE)),
-                name, age, address, number, mail, new LinkedHashSet<EventId>());
-        organizer.writeToJSON();
-        return organizer;
-    }
-
-    private static Attendee attendeeLogin(String credFilepath, String dataFilePath) {
+    private static <T extends User & UserOperation<T>> T login(String credFilepath, String dataFilePath, Class<T> clazz) throws InvalidLoginException{
         try (
                 BufferedReader reader = new BufferedReader(new FileReader(credFilepath))) {
 
@@ -445,118 +333,17 @@ public class EventManagementSystem {
             String password = INPUT.nextLine();
 
             // Check if the provided username-password pair exists in the file
-            int lineNum = isValidCredentials(username, password, credFilepath);
+            int lineNum = Credentials.isValidCredentials(username, password, credFilepath);
+            System.out.println("This is valid @" + lineNum);
             if (lineNum > 0) {
-                JsonNode userNode = MAPPER.readTree(new File(dataFilePath)).get(lineNum-1);
-                return Attendee.readFromJSON(userNode);
-
+                return JSONConvertable.readFromJSON(MAPPER.readTree(new File(dataFilePath)), lineNum - 1, clazz);
             } else {
-                System.out.println("Invalid username or password. Login failed.");
-                return null;
+                throw new InvalidLoginException();
             }
 
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
-    }
-
-    private static Organizer organizerLogin(String credFilepath, String dataFilePath) {
-        try (
-                BufferedReader reader = new BufferedReader(new FileReader(credFilepath))) {
-
-            System.out.println("Login:");
-            System.out.print("Enter username: ");
-            String username = INPUT.nextLine();
-            System.out.print("Enter password: ");
-            String password = INPUT.nextLine();
-
-            // Check if the provided username-password pair exists in the file
-            int lineNum = isValidCredentials(username, password, credFilepath);
-            if (lineNum > 0) {
-                JsonNode userNode = MAPPER.readTree(new File(dataFilePath)).get(lineNum-1);
-                return Organizer.readFromJSON(userNode);
-            } else {
-                System.out.println("Invalid username or password. Login failed.");
-                return null;
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private static Volunteer volunteerLogin(String credFilepath, String dataFilePath) {
-        try (
-                BufferedReader reader = new BufferedReader(new FileReader(credFilepath))) {
-
-            System.out.println("Login:");
-            System.out.print("Enter username: ");
-            String username = INPUT.nextLine();
-            System.out.print("Enter password: ");
-            String password = INPUT.nextLine();
-
-            // Check if the provided username-password pair exists in the file
-            int lineNum = isValidCredentials(username, password, credFilepath);
-            if (lineNum > 0) {
-                JsonNode userNode = MAPPER.readTree(new File(dataFilePath)).get(lineNum-1);
-                return Volunteer.readFromJSON(userNode);
-            } else {
-                System.out.println("Invalid username or password. Login failed.");
-                return null;
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private static void validatePassword(String password) throws InvalidPasswordException {
-        // Check if the password is at least 6 characters long
-        if (password.length() < 6) {
-            throw new InvalidPasswordException("Password must be at least 6 characters long.");
-        }
-
-        // Check if the password contains at least 1 capital letter
-        if (!password.matches(".*[A-Z].*")) {
-            throw new InvalidPasswordException("Password must contain at least 1 capital letter.");
-        }
-
-        // Check if the password contains at least 1 special character
-        Pattern specialCharacterPattern = Pattern.compile("[!@#$%^&*(),.?\":{}|<>]");
-        Matcher matcher = specialCharacterPattern.matcher(password);
-        if (!matcher.find()) {
-            throw new InvalidPasswordException("Password must contain at least 1 special character.");
-        }
-    }
-
-    private static int isValidCredentials(String username, String password, String filePath) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            int lineNum = 1;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length >= 2 && parts[0].equals(username) && parts[1].equals(password)) {
-                    return lineNum; // Username and password match
-                }
-                lineNum++;
-            }
-        }
-        return 0; // Invalid username or password
-    }
-
-    private static boolean isUsernameExists(String username, String filePath) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length >= 1 && parts[0].equals(username)) {
-                    return true; // Username already exists
-                }
-            }
-        }
-        return false; // Username does not exist
     }
 }

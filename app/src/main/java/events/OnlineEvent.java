@@ -1,28 +1,22 @@
 package events;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-
 import users.Organizer;
-import users.UserId;
 
-import java.io.File;
-import java.io.IOException;
+
+import static json.CustomJson.addJsonToJsonArray;
 import java.time.LocalDateTime;
 // import java.time.Period;
 // import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.LinkedHashSet;
+import java.time.format.DateTimeFormatter;
+import java.util.Scanner;
+
 
 
 public class OnlineEvent extends Event {
     private String attendeeUrl;
     private String volunteerUrl;
     public static String ONLINE_FILE = "app/src/main/files/events/online_events.json";
+    public static Scanner INPUT = new Scanner(System.in);
     // Constructors
 
     public OnlineEvent(){}
@@ -48,48 +42,48 @@ public class OnlineEvent extends Event {
     @Override
     public void displayDetails() {
         System.out.println("Online Event Details:");
-        System.out.println("Event ID: " + getId());
-        System.out.println("Organizer: " + getOrganizer().getUsername());
-        System.out.println("Start Time: " + getStart().toString());
-        System.out.println("End Time: " + getEnd().toString());
-        System.out.println("Contact Number: " + getContactNumber());
-        System.out.println("Contact Email: " + getContactEmail());
-        System.out.println("Max Participants: " + getMaxParticipants());
-        System.out.println("Max Volunteers: " + getMaxVolunteers());
+        super.displayDetails();
         System.out.println("Attendee URL: " + getAttendeeUrl());
         System.out.println("Volunteer URL: " + getVolunteerUrl());
     }
 
     @Override
     public void writeToJSON() {
-       ObjectMapper objectMapper = new ObjectMapper();
-       objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-       objectMapper.findAndRegisterModules();
-        try{
-            LinkedHashSet<OnlineEvent> events = objectMapper.readValue(new File(ONLINE_FILE), 
-            new TypeReference<LinkedHashSet<OnlineEvent>>() {});
-            events.add(this);
-            ObjectWriter writer = objectMapper.writer(new DefaultPrettyPrinter());
-            writer.writeValue(new File(ONLINE_FILE), events);
-        }catch(IOException e){
-            System.out.println("Error appending object: " + e.getMessage());
-        }
+       addJsonToJsonArray(ONLINE_FILE, this, this.getClass());
     }
 
-    @Override
-    public void readFromJSON() {
-        
+    public static OnlineEvent inputOnlineEvent(Organizer organizer){
+        System.out.print("What is the name of your new event: ");
+        String name = INPUT.nextLine();
+        System.out.print("Enter max participants: ");
+        int maxParticipants = INPUT.nextInt();
+        System.out.print("Enter max volunteers: ");
+        int maxVolunteers = INPUT.nextInt();
+        INPUT.nextLine(); // Consume the newline character
+        System.out.print("Enter contact number: ");
+        String contactNumber = INPUT.nextLine();
+        System.out.print("Enter contact email: ");
+        String contactEmail = INPUT.nextLine();
+        System.out.print("Enter description: ");
+        String description = INPUT.nextLine();
+        System.out.print("Enter the starting date(YYYY-mm-dd): ");
+        String date = INPUT.nextLine();
+        System.out.print("Enter the starting time(HH:mm): ");
+        String time = INPUT.nextLine();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        LocalDateTime startDateTime = LocalDateTime.parse(date + " " + time, formatter);
+        System.out.print("Enter the ending date(YYYY-mm-dd): ");
+        date = INPUT.nextLine();
+        System.out.print("Enter the ending time(HH:mm): ");
+        time = INPUT.nextLine();
+        LocalDateTime endDateTime = LocalDateTime.parse(date + " " + time, formatter);
+        System.out.print("Give the URL for your attendees: ");
+        String attendeeUrl = INPUT.nextLine();
+        System.out.print("Give the URL for your volunteers: ");
+        String volunteerUrl = INPUT.nextLine();
+        return new OnlineEvent(EventId.getUniqueEventId(OnlineEvent.ONLINE_FILE), name, organizer, maxParticipants,
+                maxVolunteers,
+                contactNumber, contactEmail, description, startDateTime, endDateTime,
+                attendeeUrl, volunteerUrl);
     }
-    @Override
-    public void notification(UserId id) {
-        LocalDateTime now = LocalDateTime.now();
-        long hoursUntilEvent = ChronoUnit.HOURS.between(now,getStart());
-        if (hoursUntilEvent <= 24) {
-            System.out.println("Event is within a day!");
-            System.out.println("Event details: " + getStart());
-            displayDetails();
-        }
-
-    }
-
 }

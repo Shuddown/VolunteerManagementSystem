@@ -1,123 +1,77 @@
 package users;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import static json.CustomJson.addJsonToJsonArray;
+
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Scanner;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-
 import common.Location;
 import events.*;
+import volunteermanagementsystem.UserOperation;
 
-public class Organizer extends User implements EventCreation {
+public class Organizer extends User implements EventCreation, UserOperation<Organizer>{
 
     public static final String ORGANIZER_FILE = "app/src/main/files/users/organizers.json";
-    
+
     private String contactNumber;
     private String contactMail;
 
-    public Organizer(){}
+    public Organizer() {
+    }
 
-    public Organizer(UserId id, String username, int age, Location address, String contactNumber,String contactMail,
+    public Organizer(UserId id, String username, int age, Location address, String contactNumber, String contactMail,
             LinkedHashSet<EventId> organizedEvents) {
         super(id, username, age, address, organizedEvents);
         this.contactNumber = contactNumber;
         this.contactMail = contactMail;
     }
-    
-    public static Organizer readFromJSON(JsonNode organizerJson) throws JsonProcessingException{
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        Organizer organizer = objectMapper.treeToValue(organizerJson,Organizer.class);
-        return organizer;
-    }
 
     @Override
     public void writeToJSON() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        try{
-            LinkedHashSet<Organizer> organizers = objectMapper.readValue(new File(ORGANIZER_FILE), 
-            new TypeReference<LinkedHashSet<Organizer>>() {});
-            organizers.add(this);
-            ObjectWriter writer = objectMapper.writer(new DefaultPrettyPrinter());
-            writer.writeValue(new File(ORGANIZER_FILE), organizers);
-        }catch(IOException e){
-            System.out.println("Error appending object: " + e.getMessage());
-        }
+        addJsonToJsonArray(ORGANIZER_FILE, this, this.getClass());
     }
-        
 
     private static final Scanner INPUT = new Scanner(System.in);
 
     @Override
-    public Event createEvent(LinkedHashMap<EventId,Event> eventMap){
-        System.out.print("What is the name of your new event: ");
-        String name = INPUT.nextLine();
-        System.out.print("Enter max participants: ");
-        int maxParticipants = INPUT.nextInt();
-        System.out.print("Enter max volunteers: ");
-        int maxVolunteers = INPUT.nextInt();
-        INPUT.nextLine(); // Consume the newline character
-        System.out.print("Enter contact number: ");
-        String contactNumber = INPUT.nextLine();
-        System.out.print("Enter contact email: ");
-        String contactEmail = INPUT.nextLine();
-        System.out.print("Enter description: ");
-        String description = INPUT.nextLine();
-        System.out.print("Enter the starting date(YYYY-mm-dd): ");
-        String date = INPUT.nextLine();
-        System.out.print("Enter the starting time(HH:mm): ");
-        String time = INPUT.nextLine();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        LocalDateTime startDateTime =  LocalDateTime.parse(date + " " + time, formatter);
-        System.out.print("Enter the ending date(YYYY-mm-dd): ");
-        date = INPUT.nextLine();
-        System.out.print("Enter the ending time(HH:mm): ");
-        time = INPUT.nextLine();
-        LocalDateTime endDateTime =  LocalDateTime.parse(date + " " + time, formatter);
+    public Event createEvent(LinkedHashMap<EventId, Event> eventMap) {
         System.out.print("Will this be an online or offline event (O/F): ");
         final char ch = INPUT.nextLine().toLowerCase().charAt(0);
-        Event newEvent;
-        switch(ch){
-            case 'o':
-            System.out.print("Give the URL for your attendees: ");
-            String attendeeUrl = INPUT.nextLine();
-            System.out.print("Give the URL for your volunteers: ");
-            String volunteerUrl = INPUT.nextLine();
-            newEvent = new OnlineEvent(EventId.getUniqueEventId(eventMap), name, this, maxParticipants, maxVolunteers,
-             contactNumber, contactEmail, description, startDateTime, endDateTime, 
-             attendeeUrl, volunteerUrl);
-            break;
-            case 'f':
-            Location eventLocation;
-            try{
-            eventLocation = Location.getLocation("the event's");
-            }catch(JsonProcessingException e){
-                eventLocation = new Location("The North Pole", 0, 0);
+        Event newEvent = null;
+        do {
+            switch (ch) {
+                case 'o':
+                    newEvent = OnlineEvent.inputOnlineEvent(this);
+                    break;
+                case 'f':
+                    newEvent = OfflineEvent.inputOfflineEvent(this);
+                    break;
+                default:
+                    System.out.println("Please enter a valid choice!");
             }
-
-            newEvent = new OfflineEvent(EventId.getUniqueEventId(eventMap), name, this, maxParticipants, maxVolunteers, 
-            contactNumber, contactEmail, description, startDateTime, endDateTime, eventLocation);
-            break;
-            default:
-            throw new RuntimeException();
-        }
+        } while (newEvent == null);
         newEvent.writeToJSON();
         this.events.add(newEvent.getId());
         return newEvent;
-}
+    }
+
+    @Override
+    public Organizer signUp(Organizer organizer) {
+        System.out.println("Enter name: ");
+        String name = INPUT.nextLine();
+        System.out.println("Enter age: ");
+        int age = Integer.parseInt(INPUT.nextLine());
+        System.out.println("Enter contact mail : ");
+        String mail = INPUT.nextLine();
+        System.out.println("Enter contact phone number : ");
+        String number = INPUT.nextLine();
+        Location address = Location.getLocation("your");
+        organizer = new Organizer(UserId.getUniqueUserId(ORGANIZER_FILE),
+                name, age, address, number, mail, new LinkedHashSet<EventId>());
+        organizer.writeToJSON();
+        return organizer;
+    }
 
     @Override
     public void cancelEvent(EventId eventId) {
@@ -149,7 +103,5 @@ public class Organizer extends User implements EventCreation {
     public static Scanner getInput() {
         return INPUT;
     }
-
-    
 
 }

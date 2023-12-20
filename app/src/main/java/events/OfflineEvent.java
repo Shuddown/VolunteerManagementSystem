@@ -2,31 +2,24 @@ package events;
 
 import common.Location;
 import users.Organizer;
-import users.UserId;
+import json.*;
 
-import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.LinkedHashSet;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import java.time.format.DateTimeFormatter;
+import java.util.Scanner;
 
 public class OfflineEvent extends Event {
     private Location location;
     public static String OFFLINE_FILE = "app/src/main/files/events/offline_events.json";
+    private static Scanner INPUT = new Scanner(System.in);
     // Constructors
 
-    public OfflineEvent(){}
-    
+    public OfflineEvent() {
+    }
+
     public OfflineEvent(EventId id, String name, Organizer organizer, int maxParticipants, int maxVolunteers,
-                        String contactNumber, String contactEmail, String description,
-                        LocalDateTime start, LocalDateTime end, Location location) {
+            String contactNumber, String contactEmail, String description,
+            LocalDateTime start, LocalDateTime end, Location location) {
         super(id, name, organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
                 description, start, end);
         this.location = location;
@@ -41,46 +34,45 @@ public class OfflineEvent extends Event {
     @Override
     public void displayDetails() {
         System.out.println("Offline Event Details:");
-        System.out.println("Event ID: " + getId());
-        System.out.println("Organizer: " + getOrganizer().getUsername());
-        System.out.println("Location: " + getLocation().getAddress());
-        System.out.println("Start Time: " + getStart().toString());
-        System.out.println("End Time: " + getEnd().toString());
-        System.out.println("Contact Number: " + getContactNumber());
-        System.out.println("Contact Email: " + getContactEmail());
-        System.out.println("Max Participants: " + getMaxParticipants());
-        System.out.println("Max Volunteers: " + getMaxVolunteers());
+        super.displayDetails();
+        System.out.println("Location: " + getLocation());
+    }
+
+    public static OfflineEvent inputOfflineEvent(Organizer organizer) {
+        System.out.print("What is the name of your new event: ");
+        String name = INPUT.nextLine();
+        System.out.print("Enter max participants: ");
+        int maxParticipants = INPUT.nextInt();
+        System.out.print("Enter max volunteers: ");
+        int maxVolunteers = INPUT.nextInt();
+        INPUT.nextLine(); // Consume the newline character
+        System.out.print("Enter contact number: ");
+        String contactNumber = INPUT.nextLine();
+        System.out.print("Enter contact email: ");
+        String contactEmail = INPUT.nextLine();
+        System.out.print("Enter description: ");
+        String description = INPUT.nextLine();
+        System.out.print("Enter the starting date(YYYY-mm-dd): ");
+        String date = INPUT.nextLine();
+        System.out.print("Enter the starting time(HH:mm): ");
+        String time = INPUT.nextLine();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        LocalDateTime startDateTime = LocalDateTime.parse(date + " " + time, formatter);
+        System.out.print("Enter the ending date(YYYY-mm-dd): ");
+        date = INPUT.nextLine();
+        System.out.print("Enter the ending time(HH:mm): ");
+        time = INPUT.nextLine();
+        LocalDateTime endDateTime = LocalDateTime.parse(date + " " + time, formatter);
+        Location eventLocation;
+        eventLocation = Location.getLocation("the event's");
+        //eventLocation = new Location("The North Pole", 0, 0);
+        return new OfflineEvent(EventId.getUniqueEventId(OFFLINE_FILE), name, 
+        organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail, 
+        description, startDateTime, endDateTime, eventLocation);
     }
 
     @Override
     public void writeToJSON() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        objectMapper.findAndRegisterModules();
-        try{
-            LinkedHashSet<OfflineEvent> events = objectMapper.readValue(new File(OFFLINE_FILE), 
-            new TypeReference<LinkedHashSet<OfflineEvent>>() {});
-            events.add(this);
-            ObjectWriter writer = objectMapper.writer(new DefaultPrettyPrinter());
-            writer.writeValue(new File(OFFLINE_FILE), events);
-        }catch(IOException e){
-            System.out.println("Error appending object: " + e.getMessage());
-        }
+        CustomJson.addJsonToJsonArray(OFFLINE_FILE, this, this.getClass());
     }
-
-    @Override
-    public void readFromJSON() {
-        
-    }
-
-    @Override
-    public void notification(UserId id) {
-        LocalDateTime now = LocalDateTime.now();
-        long hoursUntilEvent = ChronoUnit.HOURS.between(now,getStart());
-        if (hoursUntilEvent <= 24) {
-            System.out.println("Event is within a day!");
-            displayDetails();
-        }
-    }
-
 }

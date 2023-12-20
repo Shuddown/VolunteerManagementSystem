@@ -1,1 +1,18 @@
-[{"id":{"id":"ZzRD"},"username":"theBest","age":34,"address":{"address":"Chennai","coordinates":{"latitude":13.0836939,"longitude":80.270186}},"events":[],"contactNumber":"3245456"}]
+[ {
+  "id" : {
+    "id" : "9hBo"
+  },
+  "username" : "John",
+  "age" : 13,
+  "address" : {
+    "address" : "Allahabad",
+    "coordinates" : {
+      "latitude" : 25.4381302,
+      "longitude" : 81.8338005
+    }
+  },
+  "events" : [ {
+    "id" : "8kav_ps="
+  } ],
+  "contactNumber" : "12323435"
+} ]
