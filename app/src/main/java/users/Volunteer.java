@@ -7,11 +7,11 @@ import java.util.LinkedHashSet;
 import java.util.Scanner;
 
 import common.Location;
+import eventManagementSystem.UserOperation;
 import events.Event;
 import events.EventId;
 import events.EventRegistration;
 import exceptions.ConflictingParticipationException;
-import volunteermanagementsystem.UserOperation;
 
 public class Volunteer extends User implements EventRegistration, UserOperation<Volunteer>{
 

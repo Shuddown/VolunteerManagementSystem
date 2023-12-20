@@ -28,7 +28,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass = 'volunteermanagementsystem.App'
+    mainClass = 'eventManagementSystem.EventManagementSystem'
 }
 
 tasks.named('test') {

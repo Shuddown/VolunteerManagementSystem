@@ -1,4 +1,4 @@
-package volunteermanagementsystem;
+package eventManagementSystem;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

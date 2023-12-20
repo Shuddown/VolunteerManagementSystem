@@ -1,4 +1,4 @@
-package volunteermanagementsystem;
+package eventManagementSystem;
 
 import json.JSONConvertable;
 

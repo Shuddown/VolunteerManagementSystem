@@ -6,9 +6,9 @@ import java.util.LinkedHashSet;
 import java.util.Scanner;
 
 import common.Location;
+import eventManagementSystem.UserOperation;
 import events.*;
 import exceptions.ConflictingParticipationException;
-import volunteermanagementsystem.UserOperation;
 
 public class Attendee extends User implements EventRegistration, UserOperation<Attendee>{
 

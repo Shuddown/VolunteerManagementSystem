@@ -7,8 +7,8 @@ import java.util.LinkedHashSet;
 import java.util.Scanner;
 
 import common.Location;
+import eventManagementSystem.UserOperation;
 import events.*;
-import volunteermanagementsystem.UserOperation;
 
 public class Organizer extends User implements EventCreation, UserOperation<Organizer>{
 
