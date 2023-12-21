@@ -9,15 +9,23 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import exceptions.InvalidPasswordException;
 import exceptions.InvalidUsernameException;
 
 public class Credentials {
     public static final Scanner INPUT = new Scanner(System.in);
 
-    public static void addUsernameAndPassword(String filePath) {
-        try (
-                BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) {
+    public static void addUsernameAndPassword(String filePath) throws InvalidUsernameException {
+        boolean append;
+        try{
+        append = !(Files.lines(Paths.get(filePath)).allMatch(String::isBlank));
+        }catch(IOException e){
+            append = true;
+        }
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, append))) {
 
             System.out.println("Sign Up:");
             System.out.print("Enter username: ");
@@ -50,7 +58,7 @@ public class Credentials {
             System.out.println("Account created successfully.");
 
         } catch (IOException | InvalidUsernameException e) {
-            e.printStackTrace();
+            System.out.println(e);
         }
     }
 

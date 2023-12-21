@@ -103,7 +103,7 @@ abstract public class Event implements JSONConvertable, Displayable{
         return registeredVolunteers;
     }
 
-    public void registerVolunteer(UserId id){
+    public void registerVolunteer(UserId id) throws AlreadyParticipatedException{
         if(isRegisteredVolunteer(id))
         throw new AlreadyParticipatedException();
         if(registeredVolunteers.size() >= maxVolunteers)
@@ -113,7 +113,7 @@ abstract public class Event implements JSONConvertable, Displayable{
         }
     }
 
-    public void registerAttendee(UserId id){
+    public void registerAttendee(UserId id) throws AlreadyParticipatedException{
         if(isRegisteredAttendee(id))
         throw new AlreadyParticipatedException();
         if(registeredAttendees.size() >= maxParticipants)

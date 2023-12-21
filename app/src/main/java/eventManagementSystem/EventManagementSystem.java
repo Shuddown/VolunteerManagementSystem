@@ -25,6 +25,7 @@ import events.OnlineEvent;
 import exceptions.AlreadyParticipatedException;
 import exceptions.ConflictingParticipationException;
 import exceptions.InvalidLoginException;
+import exceptions.InvalidUsernameException;
 import json.CustomJson;
 import json.JSONConvertable;
 import users.Attendee;
@@ -32,11 +33,12 @@ import users.Organizer;
 import users.User;
 import users.Volunteer;
 
-
 public class EventManagementSystem {
     private static final Scanner INPUT = new Scanner(System.in);
-    private static final LinkedHashSet<OfflineEvent> OFFLINE_EVENTS = CustomJson.objectArrayFromFile(OfflineEvent.OFFLINE_FILE, OfflineEvent.class);
-    private static final LinkedHashSet<OnlineEvent> ONLINE_EVENTS = CustomJson.objectArrayFromFile(OnlineEvent.ONLINE_FILE, OnlineEvent.class);
+    private static final LinkedHashSet<OfflineEvent> OFFLINE_EVENTS = CustomJson
+            .objectArrayFromFile(OfflineEvent.OFFLINE_FILE, OfflineEvent.class);
+    private static final LinkedHashSet<OnlineEvent> ONLINE_EVENTS = CustomJson
+            .objectArrayFromFile(OnlineEvent.ONLINE_FILE, OnlineEvent.class);
     private static final LinkedHashMap<EventId, Event> EVENTS = allEvents(OFFLINE_EVENTS, ONLINE_EVENTS);
 
     public static void main(String[] args) throws JsonProcessingException, IOException {
@@ -68,36 +70,36 @@ public class EventManagementSystem {
                     break;
             }
 
-            updateEvents(OFFLINE_EVENTS,OfflineEvent.OFFLINE_FILE);
+            updateEvents(OFFLINE_EVENTS, OfflineEvent.OFFLINE_FILE);
             updateEvents(ONLINE_EVENTS, OnlineEvent.ONLINE_FILE);
 
         }
     }
 
     private static LinkedHashMap<EventId, Event> allEvents(LinkedHashSet<OfflineEvent> offlineEvents,
-     LinkedHashSet<OnlineEvent> onlineEvents) {
+            LinkedHashSet<OnlineEvent> onlineEvents) {
         LinkedHashMap<EventId, Event> result = new LinkedHashMap<>();
-        for(Event event : offlineEvents){
+        for (Event event : offlineEvents) {
             result.put(event.getId(), event);
         }
-        for(Event event : onlineEvents){
+        for (Event event : onlineEvents) {
             result.put(event.getId(), event);
         }
         return result;
     }
 
-    private static<T extends Event> void updateEvents(LinkedHashSet<T> events, String filePath) {
+    private static <T extends Event> void updateEvents(LinkedHashSet<T> events, String filePath) {
         String json = CustomJson.toJsonArray(events);
         writeJsonToFile(filePath, json);
     }
 
     private static <T extends User> void updateUser(T newUser, String filepath) throws IOException {
-        ArrayList<T> oldstuff = MAPPER.readValue(new File(filepath), MAPPER.getTypeFactory().constructCollectionType(ArrayList.class, newUser.getClass()));
+        ArrayList<T> oldstuff = MAPPER.readValue(new File(filepath),
+                MAPPER.getTypeFactory().constructCollectionType(ArrayList.class, newUser.getClass()));
         int userIndex = oldstuff.indexOf(newUser);
         oldstuff.set(userIndex, newUser);
         WRITER.writeValue(new File(filepath), oldstuff);
     }
-
 
     private static <T extends User & UserOperation<T>> T signUpOrLogin(T user, String userCredentialsFile,
             String userDataFile, Class<T> clazz) {
@@ -115,14 +117,18 @@ public class EventManagementSystem {
             switch (actionChoice) {
                 case 1:
                     System.out.println(className + " Sign Up");
-                    Credentials.addUsernameAndPassword(userCredentialsFile);
+                    try{
+                        Credentials.addUsernameAndPassword(userCredentialsFile);
+                    }catch(InvalidUsernameException e){
+                        System.out.println(e);
+                    }
                     user = user.signUp(user);
                     break;
                 case 2:
                     System.out.println(className + " Log In");
-                    try{
-                    user = login(userCredentialsFile, userDataFile, clazz);
-                    }catch(InvalidLoginException e){
+                    try {
+                        user = login(userCredentialsFile, userDataFile, clazz);
+                    } catch (InvalidLoginException e) {
                         System.out.println(e);
                         validChoice = false;
                     }
@@ -140,8 +146,9 @@ public class EventManagementSystem {
 
     private static void processOrganizer() throws JsonProcessingException, IOException {
         final String ORGANIZER_CREDENTIALS = "app/src/main/files/login/organizer_credentials.txt";
-        Organizer organizer = signUpOrLogin(new Organizer(), ORGANIZER_CREDENTIALS, Organizer.ORGANIZER_FILE, Organizer.class);
-        if (organizer == null){
+        Organizer organizer = signUpOrLogin(new Organizer(), ORGANIZER_CREDENTIALS, Organizer.ORGANIZER_FILE,
+                Organizer.class);
+        if (organizer == null) {
             System.out.println("Error?");
             return;
         }
@@ -160,10 +167,10 @@ public class EventManagementSystem {
                 case 1:
                     Event newEvent = organizer.createEvent(EVENTS);
                     EVENTS.put(newEvent.getId(), newEvent);
-                    if(newEvent instanceof OnlineEvent)
-                        ONLINE_EVENTS.add( (OnlineEvent) newEvent);
-                    else if(newEvent instanceof OfflineEvent)
-                        OFFLINE_EVENTS.add( (OfflineEvent) newEvent);
+                    if (newEvent instanceof OnlineEvent)
+                        ONLINE_EVENTS.add((OnlineEvent) newEvent);
+                    else if (newEvent instanceof OfflineEvent)
+                        OFFLINE_EVENTS.add((OfflineEvent) newEvent);
                     break;
                 case 2:
                     organizer.displayEvents(EVENTS);
@@ -177,7 +184,10 @@ public class EventManagementSystem {
                     EventId id = ids.get(Integer.parseInt(INPUT.nextLine()) - 1);
                     System.out.println(id);
                     organizer.cancelEvent(id);
+                    Event delEvent = EVENTS.get(id);
                     EVENTS.remove(id);
+                    ONLINE_EVENTS.remove(delEvent);
+                    OFFLINE_EVENTS.remove(delEvent);
                     break;
                 case 4:
                     System.out.println("Exiting...");
@@ -190,7 +200,7 @@ public class EventManagementSystem {
         }
     }
 
-    private static void processAttendee() throws IOException{
+    private static void processAttendee() throws IOException {
         final String ATTENDEE_CREDENTIALS = "app/src/main/files/login/attendee_credentials.txt";
         Attendee attendee = signUpOrLogin(new Attendee(), ATTENDEE_CREDENTIALS, Attendee.ATTENDEE_FILE, Attendee.class);
         if (attendee == null)
@@ -259,9 +269,10 @@ public class EventManagementSystem {
         }
     }
 
-    private static void processVolunteer() throws IOException{
+    private static void processVolunteer() throws IOException {
         final String VOLUNTEER_CREDENTIALS = "app/src/main/files/login/volunteer_credentials.txt";
-        Volunteer volunteer = signUpOrLogin(new Volunteer(), VOLUNTEER_CREDENTIALS, Volunteer.VOLUNTEER_FILE, Volunteer.class);
+        Volunteer volunteer = signUpOrLogin(new Volunteer(), VOLUNTEER_CREDENTIALS, Volunteer.VOLUNTEER_FILE,
+                Volunteer.class);
         int choice = -1;
         while (choice != 6) {
             System.out.println("Choose an action:");
@@ -289,8 +300,12 @@ public class EventManagementSystem {
                     }
                     EventId id = ids.get(Integer.parseInt(INPUT.nextLine()) - 1);
                     System.out.println(id);
-                    volunteer.registerForEvent(id, EVENTS);
-                    EVENTS.get(id).registerVolunteer(volunteer.getId());
+                    try {
+                        volunteer.registerForEvent(id, EVENTS);
+                        EVENTS.get(id).registerVolunteer(volunteer.getId());
+                    } catch (AlreadyParticipatedException | ConflictingParticipationException e) {
+                        System.out.println(e);
+                    }
                     break;
                 case 3:
                     System.out.println("Enter event ID to cancel:");
@@ -322,7 +337,8 @@ public class EventManagementSystem {
 
     }
 
-    private static <T extends User & UserOperation<T>> T login(String credFilepath, String dataFilePath, Class<T> clazz) throws InvalidLoginException{
+    private static <T extends User & UserOperation<T>> T login(String credFilepath, String dataFilePath, Class<T> clazz)
+            throws InvalidLoginException {
         try (
                 BufferedReader reader = new BufferedReader(new FileReader(credFilepath))) {
 

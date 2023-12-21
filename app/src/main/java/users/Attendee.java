@@ -8,9 +8,10 @@ import java.util.Scanner;
 import common.Location;
 import eventManagementSystem.UserOperation;
 import events.*;
+import exceptions.AlreadyParticipatedException;
 import exceptions.ConflictingParticipationException;
 
-public class Attendee extends User implements EventRegistration, UserOperation<Attendee>{
+public class Attendee extends User implements EventRegistration, UserOperation<Attendee> {
 
     public Attendee() {
     }
@@ -30,9 +31,12 @@ public class Attendee extends User implements EventRegistration, UserOperation<A
     }
 
     @Override
-    public void registerForEvent(EventId eventId, LinkedHashMap<EventId, Event> eventMap){
+    public void registerForEvent(EventId eventId, LinkedHashMap<EventId, Event> eventMap)
+            throws ConflictingParticipationException, AlreadyParticipatedException {
         if (isParticipationConflict(eventId, eventMap))
             throw new ConflictingParticipationException();
+        if (events.contains(eventId))
+            throw new AlreadyParticipatedException();
         events.add(eventId);
     }
 

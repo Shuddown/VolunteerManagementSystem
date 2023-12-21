@@ -1,6 +1,7 @@
 package events;
 
 import common.Location;
+import common.Utils;
 import users.Organizer;
 import json.*;
 
@@ -52,23 +53,17 @@ public class OfflineEvent extends Event {
         String contactEmail = INPUT.nextLine();
         System.out.print("Enter description: ");
         String description = INPUT.nextLine();
-        System.out.print("Enter the starting date(YYYY-mm-dd): ");
-        String date = INPUT.nextLine();
-        System.out.print("Enter the starting time(HH:mm): ");
-        String time = INPUT.nextLine();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        LocalDateTime startDateTime = LocalDateTime.parse(date + " " + time, formatter);
-        System.out.print("Enter the ending date(YYYY-mm-dd): ");
-        date = INPUT.nextLine();
-        System.out.print("Enter the ending time(HH:mm): ");
-        time = INPUT.nextLine();
-        LocalDateTime endDateTime = LocalDateTime.parse(date + " " + time, formatter);
+        LocalDateTime startDateTime = Utils.inputDateTime("Enter the starting date(YYYY-mm-dd): ",
+                "Enter the starting time(HH:mm): ", formatter);
+        LocalDateTime endDateTime = Utils.inputDateTime("Enter the ending date(YYYY-mm-dd): ",
+                "Enter the ending time(HH:mm): ", formatter);
         Location eventLocation;
         eventLocation = Location.getLocation("the event's");
-        //eventLocation = new Location("The North Pole", 0, 0);
-        return new OfflineEvent(EventId.getUniqueEventId(OFFLINE_FILE), name, 
-        organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail, 
-        description, startDateTime, endDateTime, eventLocation);
+        // eventLocation = new Location("The North Pole", 0, 0);
+        return new OfflineEvent(EventId.getUniqueEventId(OFFLINE_FILE), name,
+                organizer, maxParticipants, maxVolunteers, contactNumber, contactEmail,
+                description, startDateTime, endDateTime, eventLocation);
     }
 
     @Override

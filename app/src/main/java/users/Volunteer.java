@@ -11,6 +11,7 @@ import eventManagementSystem.UserOperation;
 import events.Event;
 import events.EventId;
 import events.EventRegistration;
+import exceptions.AlreadyParticipatedException;
 import exceptions.ConflictingParticipationException;
 
 public class Volunteer extends User implements EventRegistration, UserOperation<Volunteer>{
@@ -34,9 +35,11 @@ public class Volunteer extends User implements EventRegistration, UserOperation<
     }
 
     @Override
-    public void registerForEvent(EventId eventId, LinkedHashMap<EventId, Event> eventMap) {
+    public void registerForEvent(EventId eventId, LinkedHashMap<EventId, Event> eventMap) throws ConflictingParticipationException, AlreadyParticipatedException{
         if (isParticipationConflict(eventId, eventMap))
             throw new ConflictingParticipationException();
+        if(events.contains(eventId))
+            throw new AlreadyParticipatedException();
         events.add(eventId);
     }
 
